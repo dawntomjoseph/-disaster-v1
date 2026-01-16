@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Registration</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="volunteer-page">
+    <div class="container">
+        <!-- New User Registration Section -->
+        <div class="registration-section">
+            <div class="badge">NEW USER</div>
+            <h1>Volunteer Registration</h1>
+            <p class="subtitle">Join our team and make a difference in the community</p>
+
+            <form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fname">First Name</label>
+                        <input type="text" id="fname" name="fname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lname">Last Name</label>
+                        <input type="text" id="lname" name="lname" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="skills">Skills</label>
+                        <input type="text" id="skills" name="skills" placeholder="e.g., Teaching, Medical, Construction">
+                    </div>
+                    <div class="form-group">
+                        <label for="availability">Availability</label>
+                        <input type="text" id="availability" name="availability" placeholder="e.g., Weekends">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="bio">Why do you want to volunteer?</label>
+                    <textarea id="bio" name="bio" required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Register Now</button>
+            </form>
+        </div>
+
+        <!-- Existing User Section -->
+        <div class="login-section">
+            <div class="badge">EXISTING USER</div>
+            <h1>Login</h1>
+            <p class="subtitle">Welcome back</p>
+
+            <form>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
