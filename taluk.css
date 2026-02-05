@@ -1,0 +1,423 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    background-image: url('new.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 0;
+    top: 0;
+    left: 0;
+}
+
+/* Taluk Registration Styles */
+.container {
+    display: flex;
+    max-width: 500px;
+    width: 100%;
+    gap: 20px;
+    align-items: stretch;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.modal-content {
+    background-color: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-registration {
+    border: 2px solid rgba(255, 255, 255, 0.25) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 32px;
+    font-weight: bold;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+/* Main Registration Section */
+.registration-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    text-align: justify;
+}
+
+.registration-section h1 {
+    color: black;
+    margin-bottom: 10px;
+    font-size: 28px;
+}
+
+.registration-section .subtitle {
+    color: black;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: black;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid rgba(102, 126, 234, 0.5);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.85);
+    color: #333;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: rgba(51, 51, 51, 0.6);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 10px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Login Section */
+.login-section {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    text-align: justify;
+}
+
+.login-section h1 {
+    color: white;
+    margin-bottom: 10px;
+    font-size: 28px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.login-section .subtitle {
+    color: white;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+/* Existing User Side Button */
+.existing-user-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.existing-user-btn {
+    background: white;
+    border: 2px solid #333;
+    color: #333;
+    padding: 20px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 180px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.existing-user-btn:hover {
+    background: #333;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.badge {
+    display: inline-block;
+    background: #ff6b6b;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.login-section .badge {
+    background: #667eea;
+}
+
+/* Password Visibility Toggle */
+.password-group {
+    position: relative;
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 40px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: #667eea;
+}
+
+.eye-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Login Button Styling */
+.login-btn {
+    background: #27ae60 !important;
+    margin-top: 15px;
+}
+
+.login-btn:hover {
+    background: #229954 !important;
+    box-shadow: 0 5px 20px rgba(39, 174, 96, 0.4) !important;
+}
+
+/* New Registration Link */
+.new-registration-link {
+    margin-top: 20px;
+    text-align: center;
+    color: white;
+    font-size: 14px;
+}
+
+.new-registration-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.new-registration-link a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .existing-user-section {
+        width: 100%;
+        flex-direction: row;
+    }
+}
+
+/* Success Alert Styles */
+.success-alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.success-alert.show {
+    display: flex;
+}
+
+.success-alert-content {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.success-icon {
+    width: 60px;
+    height: 60px;
+    color: #27ae60;
+    margin: 0 auto 20px;
+    animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.success-alert-content h3 {
+    color: white;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.success-alert-content p {
+    color: white;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
