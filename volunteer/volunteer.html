@@ -51,6 +51,17 @@
 
                     <div class="form-row">
                         <div class="form-group">
+                            <label for="vusername">Username</label>
+                            <input type="text" id="vusername" name="vusername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vpassword">Password</label>
+                            <input type="password" id="vpassword" name="vpassword" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
                             <label for="skills">Skills</label>
                             <input type="text" id="skills" name="skills" placeholder="e.g., Teaching, Medical, Construction">
                         </div>
@@ -120,21 +131,65 @@
         // Login Form Submission
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            // Handle login logic here
-            console.log('Login submitted');
-            // Reset form
-            this.reset();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            fetch('/api/volunteer/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+            .then(r => {
+                if (r.status === 200) return r.json();
+                throw new Error('Invalid credentials');
+            })
+            .then(data => {
+                localStorage.setItem('loggedInVolunteer', data.volunteer.username);
+                window.location.href = 'volunteer_wait.html';
+            })
+            .catch(err => {
+                alert('Invalid username or password.');
+            });
         });
 
         // Registration Form Submission
         document.getElementById('registrationForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            // Show success alert
-            showSuccessAlert();
-            // Reset form
-            this.reset();
-            // Close modal
-            closeRegistrationModal();
+
+            const firstName = document.getElementById('fname').value.trim();
+            const lastName = document.getElementById('lname').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const availability = document.getElementById('availability').value.trim();
+            const username = document.getElementById('vusername').value.trim();
+            const password = document.getElementById('vpassword').value;
+
+            fetch('/api/volunteer/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firstName: firstName,
+                    lastName: lastName,
+                    phone: phone,
+                    availability: availability,
+                    username: username,
+                    password: password
+                })
+            })
+            .then(r => {
+                if (r.status === 200) return r.json();
+                return r.json().then(err => { throw new Error(err.error || 'Registration failed'); });
+            })
+            .then(data => {
+                showSuccessAlert();
+                this.reset();
+                closeRegistrationModal();
+            })
+            .catch(err => {
+                alert('Registration failed: ' + err.message);
+            });
         });
 
         function togglePassword() {

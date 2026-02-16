@@ -91,9 +91,7 @@
 
 /* Load when page ready */
 document.addEventListener("DOMContentLoaded", function(){
-
     loadProfile();
-
 });
 
 
@@ -110,68 +108,74 @@ function loadProfile(){
     const officerPhone = document.getElementById("officerPhone");
     const officerEmail = document.getElementById("officerEmail");
 
-
-    /* Load profile from admin */
-    const profile =
-    JSON.parse(localStorage.getItem("talukProfile"));
-
-    if(profile){
-
-        talukName.value = profile.name || "";
-        district.value = profile.district || "";
-        population.value = profile.population || "";
-        elevation.value = profile.elevation || "";
-        latitude.value = profile.latitude || "";
-        longitude.value = profile.longitude || "";
-
-    }else{
-
-        talukName.placeholder = "Not set by Admin";
-        district.placeholder = "Not set by Admin";
-        population.placeholder = "Not set by Admin";
-        elevation.placeholder = "Not set by Admin";
-        latitude.placeholder = "Not set by Admin";
-        longitude.placeholder = "Not set by Admin";
-
+    const logged = localStorage.getItem("loggedInTaluk");
+    if(!logged){
+        // no taluk logged in
+        alert('Not logged in. Please login from the Taluk login page.');
+        window.location.href = 'taluk_login.html';
+        return;
     }
 
+    fetch('/api/taluk?name=' + encodeURIComponent(logged))
+    .then(r => r.json())
+    .then(obj => {
+        if(obj.error){
+            talukName.placeholder = 'Not set by Admin';
+            return;
+        }
 
-    /* Load officer contact */
-    const contact =
-    JSON.parse(localStorage.getItem("talukOfficerContact"));
+        const profile = obj.taluk;
+        talukName.value = profile.name || '';
+        district.value = profile.district || '';
+        population.value = profile.population || '';
+        elevation.value = profile.elevation || '';
 
-    if(contact){
+        // lat/long may not be stored in DB; keep placeholders
+        latitude.value = profile.latitude || '';
+        longitude.value = profile.longitude || '';
 
-        officerName.value = contact.name || "";
-        officerPhone.value = contact.phone || "";
-        officerEmail.value = contact.email || "";
-
-    }
-
+        if(profile.contact){
+            officerName.value = profile.contact.officer_name || '';
+            officerPhone.value = profile.contact.phone || '';
+            officerEmail.value = profile.contact.email || '';
+        }
+    })
+    .catch(err => console.error(err));
 }
 
 
 /* Save contact info */
 function saveContact(){
 
-    const contact = {
+    const logged = localStorage.getItem('loggedInTaluk');
+    if(!logged){
+        alert('Not logged in');
+        return;
+    }
 
-        name: document.getElementById("officerName").value,
-        phone: document.getElementById("officerPhone").value,
-        email: document.getElementById("officerEmail").value
-
+    const payload = {
+        name: logged,
+        officerName: document.getElementById('officerName').value,
+        phone: document.getElementById('officerPhone').value,
+        email: document.getElementById('officerEmail').value
     };
 
-    localStorage.setItem(
-        "talukOfficerContact",
-        JSON.stringify(contact)
-    );
-
-
-    alert("Contact information saved successfully");
-
-    window.location.href = "taluk_home.html";
-
+    fetch('/api/taluk/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).then(r => r.json())
+    .then(resp => {
+        if(resp.status === 'ok'){
+            alert('Contact information saved successfully');
+            window.location.href = 'taluk_home.html';
+        } else {
+            alert('Save failed');
+        }
+    }).catch(err => {
+        console.error(err);
+        alert('Save failed');
+    });
 }
 
 
