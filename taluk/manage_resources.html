@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Taluk Resource Inventory</title>
+<link rel="stylesheet" href="manage_resources.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Taluk Resource Inventory</h1>
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Resource</th>
+                    <th>Count</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                <tr>
+                    <td>🚤 Rescue Boats</td>
+                    <td id="boats">0</td>
+                    <td>
+                        <button class="edit-btn"
+                        onclick="editValue('boats')">Edit</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>🚑 Rescue Vehicles</td>
+                    <td id="vehicles">0</td>
+                    <td>
+                        <button class="edit-btn"
+                        onclick="editValue('vehicles')">Edit</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>🏕 Relief Camps</td>
+                    <td id="camps">0</td>
+                    <td>
+                        <button class="edit-btn"
+                        onclick="editValue('camps')">Edit</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>👥 Population</td>
+                    <td id="population">0</td>
+                    <td>
+                        <button class="edit-btn"
+                        onclick="editValue('population')">Edit</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>🧑‍🚒 Volunteers</td>
+                    <td id="volunteers">0</td>
+                    <td>
+                        <button class="edit-btn"
+                        onclick="editValue('volunteers')">Edit</button>
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+function editValue(id){
+
+    let value = prompt("Enter new value:");
+
+    if(value !== null){
+
+        document.getElementById(id).innerText = value;
+
+        localStorage.setItem(id, value);
+
+    }
+
+}
+
+/* Load saved values */
+
+["boats","vehicles","camps","population","volunteers"]
+.forEach(id => {
+
+    let saved = localStorage.getItem(id);
+
+    if(saved){
+
+        document.getElementById(id).innerText = saved;
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

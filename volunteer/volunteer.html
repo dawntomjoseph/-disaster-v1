@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Registration</title>
+    <link rel="stylesheet" href="volunteer.css">
+</head>
+<body class="volunteer-page">
+    <!-- Success Alert -->
+    <div id="successAlert" class="success-alert">
+        <div class="success-alert-content">
+            <svg class="success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <h3>Successful Registration!</h3>
+            <p>Your volunteer application has been submitted successfully.</p>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeRegistrationModal()">&times;</button>
+            <div class="registration-section modal-registration">
+                <div class="badge">NEW USER</div>
+                <h1>Volunteer Registration</h1>
+                <p class="subtitle">Join our team and make a difference in the community</p>
+
+                <form id="registrationForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fname">First Name</label>
+                            <input type="text" id="fname" name="fname" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lname">Last Name</label>
+                            <input type="text" id="lname" name="lname" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="skills">Skills</label>
+                            <input type="text" id="skills" name="skills" placeholder="e.g., Teaching, Medical, Construction">
+                        </div>
+                        <div class="form-group">
+                            <label for="availability">Availability</label>
+                            <input type="text" id="availability" name="availability" placeholder="e.g., Weekends">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bio">Why do you want to volunteer?</label>
+                        <textarea id="bio" name="bio" required></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Register Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Existing User Section -->
+        <div class="login-section">
+            <div class="badge">EXISTING USER</div>
+            <h1>Login</h1>
+            <p class="subtitle">Welcome back</p>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="form-group password-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn login-btn">✓ Login</button>
+            </form>
+
+            <div class="new-registration-link">
+                <p>New to volunteering? <a href="#" onclick="openRegistrationModal(event)">Register here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show Success Alert
+        function showSuccessAlert() {
+            const alert = document.getElementById('successAlert');
+            alert.classList.add('show');
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 3000);
+        }
+
+        // Login Form Submission
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            // Handle login logic here
+            console.log('Login submitted');
+            // Reset form
+            this.reset();
+        });
+
+        // Registration Form Submission
+        document.getElementById('registrationForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            // Show success alert
+            showSuccessAlert();
+            // Reset form
+            this.reset();
+            // Close modal
+            closeRegistrationModal();
+        });
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+        }
+
+        function openRegistrationModal(event) {
+            event.preventDefault();
+            document.getElementById('registrationModal').style.display = 'flex';
+        }
+
+        function closeRegistrationModal() {
+            document.getElementById('registrationModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('registrationModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
+

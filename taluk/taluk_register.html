@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Taluk Registration</title>
+    <link rel="stylesheet" href="taluk_register.css">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="register-section">
+
+        <div class="badge">NEW TALUK</div>
+
+        <h1>Taluk Registration</h1>
+        <p class="subtitle">Create your Taluk account</p>
+
+        <form id="registerForm">
+
+            <div class="form-group">
+                <label>Taluk Name</label>
+                <input type="text" required>
+            </div>
+
+            <div class="form-group">
+                <label>Taluk Officer Name</label>
+                <input type="text" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" required>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" required>
+            </div>
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" required>
+            </div>
+
+            <button type="submit" class="submit-btn register-btn">
+                ✓ Register
+            </button>
+
+        </form>
+
+        <div class="login-link">
+            Already registered?  
+            <a href="taluk_login.html">Login here</a>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- SUCCESS POPUP -->
+<div id="successPopup" class="popup">
+    <div class="popup-content">
+
+        <div class="checkmark">✓</div>
+
+        <h2>Registration Successful</h2>
+
+        <p>Your Taluk account has been created.</p>
+
+        <button onclick="goToLogin()">Go to Login</button>
+
+    </div>
+</div>
+
+<script>
+
+/* Handle Registration */
+document.getElementById("registerForm").addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    document.getElementById("successPopup").style.display = "flex";
+
+});
+
+/* Redirect to Login */
+function goToLogin() {
+
+    window.location.href = "taluk_login.html";
+
+}
+
+</script>
+
+</body>
+</html>
