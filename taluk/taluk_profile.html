@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Taluk Profile</title>
+<link rel="stylesheet" href="taluk_profile.css">
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="top-bar">
+
+    <div class="logo">Taluk Profile</div>
+
+    <button class="back-btn" onclick="goBack()">
+        ← Back to Dashboard
+    </button>
+
+</header>
+
+
+<!-- Profile Container -->
+<div class="profile-container">
+
+    <div class="profile-card">
+
+        <!-- Taluk Details -->
+        <h2 class="section-title">Taluk Details</h2>
+
+        <div class="field">
+            <label>Taluk Name</label>
+            <input type="text" id="talukName" readonly>
+        </div>
+
+        <div class="field">
+            <label>District</label>
+            <input type="text" id="district" readonly>
+        </div>
+
+        <div class="field">
+            <label>Population</label>
+            <input type="text" id="population" readonly>
+        </div>
+
+        <div class="field">
+            <label>Elevation (meters)</label>
+            <input type="text" id="elevation" readonly>
+        </div>
+
+        <div class="field">
+            <label>Latitude</label>
+            <input type="text" id="latitude" readonly>
+        </div>
+
+        <div class="field">
+            <label>Longitude</label>
+            <input type="text" id="longitude" readonly>
+        </div>
+
+
+        <!-- Officer Contact Section -->
+        <h2 class="section-title">Officer Contact Information</h2>
+
+        <div class="field">
+            <label>Officer Name</label>
+            <input type="text" id="officerName" placeholder="Enter officer name">
+        </div>
+
+        <div class="field">
+            <label>Phone Number</label>
+            <input type="text" id="officerPhone" placeholder="Enter phone number">
+        </div>
+
+        <div class="field">
+            <label>Email</label>
+            <input type="email" id="officerEmail" placeholder="Enter email address">
+        </div>
+
+        <!-- Professional Save Button -->
+        <button class="save-btn" onclick="saveContact()">
+            ✓ Save Contact Information
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- JavaScript -->
+<script>
+
+/* Load when page ready */
+document.addEventListener("DOMContentLoaded", function(){
+
+    loadProfile();
+
+});
+
+
+function loadProfile(){
+
+    const talukName = document.getElementById("talukName");
+    const district = document.getElementById("district");
+    const population = document.getElementById("population");
+    const elevation = document.getElementById("elevation");
+    const latitude = document.getElementById("latitude");
+    const longitude = document.getElementById("longitude");
+
+    const officerName = document.getElementById("officerName");
+    const officerPhone = document.getElementById("officerPhone");
+    const officerEmail = document.getElementById("officerEmail");
+
+
+    /* Load profile from admin */
+    const profile =
+    JSON.parse(localStorage.getItem("talukProfile"));
+
+    if(profile){
+
+        talukName.value = profile.name || "";
+        district.value = profile.district || "";
+        population.value = profile.population || "";
+        elevation.value = profile.elevation || "";
+        latitude.value = profile.latitude || "";
+        longitude.value = profile.longitude || "";
+
+    }else{
+
+        talukName.placeholder = "Not set by Admin";
+        district.placeholder = "Not set by Admin";
+        population.placeholder = "Not set by Admin";
+        elevation.placeholder = "Not set by Admin";
+        latitude.placeholder = "Not set by Admin";
+        longitude.placeholder = "Not set by Admin";
+
+    }
+
+
+    /* Load officer contact */
+    const contact =
+    JSON.parse(localStorage.getItem("talukOfficerContact"));
+
+    if(contact){
+
+        officerName.value = contact.name || "";
+        officerPhone.value = contact.phone || "";
+        officerEmail.value = contact.email || "";
+
+    }
+
+}
+
+
+/* Save contact info */
+function saveContact(){
+
+    const contact = {
+
+        name: document.getElementById("officerName").value,
+        phone: document.getElementById("officerPhone").value,
+        email: document.getElementById("officerEmail").value
+
+    };
+
+    localStorage.setItem(
+        "talukOfficerContact",
+        JSON.stringify(contact)
+    );
+
+
+    alert("Contact information saved successfully");
+
+    window.location.href = "taluk_home.html";
+
+}
+
+
+/* Back to dashboard */
+function goBack(){
+
+    window.location.href = "taluk_home.html";
+
+}
+
+</script>
+
+
+</body>
+</html>

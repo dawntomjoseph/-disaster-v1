@@ -278,3 +278,173 @@ body::before {
     }
 
 }
+/* Profile button (professional glass style) */
+
+.profile-btn{
+
+    padding: 8px 20px;
+
+    border-radius: 20px;
+
+    background: rgba(255, 255, 255, 0.15);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border: 1px solid rgba(255,255,255,0.3);
+
+    color: white;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+
+}
+
+
+/* hover effect */
+
+.profile-btn:hover{
+
+    background: rgba(255,255,255,0.25);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 5px 15px rgba(0,0,0,0.3);
+
+}
+/* ================= RISK STATUS CARD ================= */
+
+.risk-card{
+
+width:650px;
+padding:25px 30px;
+margin-bottom:50px;
+
+border-radius:25px;
+
+background:rgba(255,255,255,0.12);
+backdrop-filter:blur(20px);
+
+border:1px solid rgba(255,255,255,0.25);
+
+color:white;
+
+transition:all 0.4s ease;
+
+}
+
+.risk-header{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+margin-bottom:15px;
+
+}
+
+.risk-title{
+
+font-size:20px;
+font-weight:600;
+
+}
+
+.risk-badge{
+
+padding:6px 18px;
+border-radius:20px;
+font-weight:600;
+
+}
+
+.risk-row{
+
+margin-bottom:8px;
+font-size:15px;
+
+}
+
+
+/* LOW */
+
+.risk-low{
+
+box-shadow:
+0 0 20px rgba(39,174,96,0.6),
+0 0 45px rgba(39,174,96,0.3);
+
+animation:glowGreen 2s infinite alternate;
+
+}
+
+.risk-low .risk-badge{
+
+background:#27ae60;
+
+}
+
+@keyframes glowGreen{
+
+from{ box-shadow:0 0 20px rgba(39,174,96,0.5); }
+to{ box-shadow:0 0 40px rgba(39,174,96,1); }
+
+}
+
+
+/* MEDIUM */
+
+.risk-medium{
+
+box-shadow:
+0 0 20px rgba(241,196,15,0.6),
+0 0 45px rgba(241,196,15,0.3);
+
+animation:glowYellow 2s infinite alternate;
+
+}
+
+.risk-medium .risk-badge{
+
+background:#f1c40f;
+color:black;
+
+}
+
+@keyframes glowYellow{
+
+from{ box-shadow:0 0 20px rgba(241,196,15,0.5); }
+to{ box-shadow:0 0 40px rgba(241,196,15,1); }
+
+}
+
+
+/* HIGH */
+
+.risk-high{
+
+box-shadow:
+0 0 25px rgba(231,76,60,0.8),
+0 0 60px rgba(231,76,60,0.4);
+
+animation:glowRed 1.2s infinite alternate;
+
+}
+
+.risk-high .risk-badge{
+
+background:#e74c3c;
+
+}
+
+@keyframes glowRed{
+
+from{ box-shadow:0 0 25px rgba(231,76,60,0.6); }
+to{ box-shadow:0 0 60px rgba(231,76,60,1); }
+
+}
