@@ -1,9 +1,15 @@
 from flask import Flask, jsonify, request, redirect
 from utils.db import get_db, init_db
-import os
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
+# ----------------- ADMIN CREDENTIALS (HARDCODED) -----------------
+
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "1234"
+
+
+# ----------------- HELPERS -----------------
 
 def sanitize_account(row_dict):
     if not row_dict:
@@ -11,6 +17,8 @@ def sanitize_account(row_dict):
     row_dict.pop('password', None)
     return row_dict
 
+
+# ----------------- BASIC ROUTES -----------------
 
 @app.route('/')
 def index():
@@ -22,6 +30,30 @@ def initdb_route():
     init_db()
     return 'Database initialized', 200
 
+# ----------------- ADMIN API -----------------
+
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    data = request.get_json() or {}
+
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({'error': 'Missing credentials'}), 400
+
+    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        return jsonify({
+            'status': 'success',
+            'admin': {
+                'username': ADMIN_USERNAME
+            }
+        }), 200
+
+    return jsonify({'error': 'Invalid admin credentials'}), 401
+
+
+# ----------------- TALUK APIs -----------------
 
 @app.route('/api/taluk')
 def get_taluk():
@@ -30,11 +62,8 @@ def get_taluk():
     cur = conn.cursor()
 
     if not name:
-        # return all taluks
         cur.execute('SELECT * FROM taluk')
-        rows = cur.fetchall()
-        taluks = [dict(r) for r in rows]
-        return jsonify({'taluks': taluks})
+        return jsonify({'taluks': [dict(r) for r in cur.fetchall()]})
 
     cur.execute('SELECT * FROM taluk WHERE name = ?', (name,))
     taluk = cur.fetchone()
@@ -43,113 +72,60 @@ def get_taluk():
 
     taluk = sanitize_account(dict(taluk))
 
-    # contact
     cur.execute('SELECT * FROM taluk_contact WHERE taluk_id = ?', (taluk['id'],))
-    contact = cur.fetchone()
-    taluk['contact'] = dict(contact) if contact else None
+    taluk['contact'] = dict(cur.fetchone() or {})
 
-    # volunteers
     cur.execute('SELECT * FROM volunteers WHERE taluk_id = ?', (taluk['id'],))
     taluk['volunteers'] = [dict(r) for r in cur.fetchall()]
 
-    # resources
     cur.execute('SELECT * FROM resources WHERE taluk_id = ?', (taluk['id'],))
     taluk['resources'] = [dict(r) for r in cur.fetchall()]
 
     return jsonify({'taluk': taluk})
 
 
-
 @app.route('/api/taluk/register', methods=['POST'])
 def register_taluk():
     data = request.get_json() or {}
-    name = data.get('name')
-    username = data.get('username')
-    password = data.get('password')
-    district = data.get('district')
-    population = data.get('population')
-    elevation = data.get('elevation')
 
-    if not name or not username or not password:
-        return jsonify({'error': 'Missing name/username/password'}), 400
+    if not data.get('name') or not data.get('username') or not data.get('password'):
+        return jsonify({'error': 'Missing required fields'}), 400
 
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute('SELECT id FROM taluk WHERE username = ?', (username,))
+    cur.execute('SELECT id FROM taluk WHERE username = ?', (data['username'],))
     if cur.fetchone():
         return jsonify({'error': 'Username already exists'}), 409
 
-    cur.execute('INSERT INTO taluk(name, district, population, username, password, elevation) VALUES(?,?,?,?,?,?)',
-                (name, district, population, username, password, elevation))
+    cur.execute(
+        'INSERT INTO taluk(name, district, population, username, password, elevation) VALUES(?,?,?,?,?,?)',
+        (data['name'], data.get('district'), data.get('population'),
+         data['username'], data['password'], data.get('elevation'))
+    )
     conn.commit()
 
-    cur.execute('SELECT * FROM taluk WHERE username = ?', (username,))
-    taluk = cur.fetchone()
-    return jsonify({'taluk': sanitize_account(dict(taluk))})
+    cur.execute('SELECT * FROM taluk WHERE username = ?', (data['username'],))
+    return jsonify({'taluk': sanitize_account(dict(cur.fetchone()))})
 
 
 @app.route('/api/taluk/login', methods=['POST'])
 def login_taluk():
     data = request.get_json() or {}
-    username = data.get('username')
-    password = data.get('password')
-
-    if not username or not password:
-        return jsonify({'error': 'Missing username/password'}), 400
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute('SELECT * FROM taluk WHERE username = ? AND password = ?', (username, password))
+    cur.execute('SELECT * FROM taluk WHERE username = ? AND password = ?',
+                (data.get('username'), data.get('password')))
     taluk = cur.fetchone()
+
     if not taluk:
         return jsonify({'error': 'Invalid credentials'}), 401
 
     return jsonify({'taluk': sanitize_account(dict(taluk))})
 
 
-@app.route('/api/taluk/contact', methods=['POST'])
-def save_contact():
-    data = request.get_json() or {}
-    name = data.get('name')
-    officer_name = data.get('officerName')
-    phone = data.get('phone')
-    email = data.get('email')
-
-    if not name:
-        return jsonify({'error': 'Missing taluk name'}), 400
-
-    conn = get_db()
-    cur = conn.cursor()
-
-    # ensure taluk exists
-    cur.execute('INSERT OR IGNORE INTO taluk(name) VALUES(?)', (name,))
-    conn.commit()
-    cur.execute('SELECT id FROM taluk WHERE name = ?', (name,))
-    taluk_id = cur.fetchone()['id']
-
-    # upsert contact (taluk_id UNIQUE)
-    cur.execute('INSERT OR REPLACE INTO taluk_contact(id, taluk_id, officer_name, phone, email) VALUES((SELECT id FROM taluk_contact WHERE taluk_id = ?), ?, ?, ?, ?)',
-                (taluk_id, taluk_id, officer_name, phone, email))
-    conn.commit()
-
-    return jsonify({'status': 'ok'})
-
-
-@app.route('/api/db')
-def dump_db():
-    conn = get_db()
-    cur = conn.cursor()
-    out = {}
-    for tbl in ['taluk', 'taluk_contact', 'resources', 'volunteers', 'rainfall_history']:
-        try:
-            cur.execute(f'SELECT * FROM {tbl}')
-            out[tbl] = [dict(r) for r in cur.fetchall()]
-        except Exception:
-            out[tbl] = []
-
-    return jsonify(out)
-
+# ----------------- RESOURCES -----------------
 
 @app.route('/api/resources', methods=['GET'])
 def get_resources():
@@ -164,100 +140,131 @@ def get_resources():
     if not row:
         return jsonify({'error': 'Taluk not found'}), 404
 
-    taluk_id = row['id']
-    cur.execute('SELECT * FROM resources WHERE taluk_id = ?', (taluk_id,))
-    res = cur.fetchone()
-    if not res:
-        return jsonify({'resources': None})
-
-    return jsonify({'resources': dict(res)})
+    cur.execute('SELECT * FROM resources WHERE taluk_id = ?', (row['id'],))
+    return jsonify({'resources': dict(cur.fetchone() or {})})
 
 
 @app.route('/api/resources', methods=['POST'])
 def upsert_resources():
     data = request.get_json() or {}
-    taluk_name = data.get('talukName')
-    boats = data.get('boats')
-    rescue_vehicles = data.get('rescueVehicles')
-    relief_camps = data.get('reliefCamps')
-    if not taluk_name:
+    if not data.get('talukName'):
         return jsonify({'error': 'Missing talukName'}), 400
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute('SELECT id FROM taluk WHERE name = ?', (taluk_name,))
-    row = cur.fetchone()
-    if not row:
+    cur.execute('SELECT id FROM taluk WHERE name = ?', (data['talukName'],))
+    taluk = cur.fetchone()
+    if not taluk:
         return jsonify({'error': 'Taluk not found'}), 404
 
-    taluk_id = row['id']
-
-    cur.execute('SELECT id FROM resources WHERE taluk_id = ?', (taluk_id,))
-    existing = cur.fetchone()
-    if existing:
-        cur.execute('UPDATE resources SET boats = ?, rescue_vehicles = ?, relief_camps = ? WHERE taluk_id = ?',
-                    (boats, rescue_vehicles, relief_camps, taluk_id))
+    cur.execute('SELECT id FROM resources WHERE taluk_id = ?', (taluk['id'],))
+    if cur.fetchone():
+        cur.execute(
+            'UPDATE resources SET boats=?, rescue_vehicles=?, relief_camps=? WHERE taluk_id=?',
+            (data.get('boats'), data.get('rescueVehicles'),
+             data.get('reliefCamps'), taluk['id'])
+        )
     else:
-        cur.execute('INSERT INTO resources(taluk_id, boats, rescue_vehicles, relief_camps) VALUES(?,?,?,?)',
-                    (taluk_id, boats, rescue_vehicles, relief_camps))
+        cur.execute(
+            'INSERT INTO resources(taluk_id, boats, rescue_vehicles, relief_camps) VALUES(?,?,?,?)',
+            (taluk['id'], data.get('boats'),
+             data.get('rescueVehicles'), data.get('reliefCamps'))
+        )
 
     conn.commit()
-    cur.execute('SELECT * FROM resources WHERE taluk_id = ?', (taluk_id,))
-    res = cur.fetchone()
-    return jsonify({'resources': dict(res)})
+    return jsonify({'status': 'updated'})
 
+
+# ----------------- VOLUNTEERS -----------------
 
 @app.route('/api/volunteer/register', methods=['POST'])
 def register_volunteer():
     data = request.get_json() or {}
-    first_name = data.get('firstName')
-    last_name = data.get('lastName')
-    phone = data.get('phone')
-    availability = data.get('availability')
-    username = data.get('username')
-    password = data.get('password')
 
-    if not first_name or not last_name or not username or not password:
+    if not all([data.get('firstName'), data.get('lastName'),
+                data.get('username'), data.get('password')]):
         return jsonify({'error': 'Missing required fields'}), 400
-
-    name = f"{first_name} {last_name}".strip()
 
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute('SELECT id FROM volunteers WHERE username = ?', (username,))
+    cur.execute('SELECT id FROM volunteers WHERE username = ?', (data['username'],))
     if cur.fetchone():
         return jsonify({'error': 'Username already exists'}), 409
 
-    cur.execute('INSERT INTO volunteers(name, phone, username, password, taluk_id, availability) VALUES(?,?,?,?,?,?)',
-                (name, phone, username, password, None, availability))
+    cur.execute(
+        'INSERT INTO volunteers(name, phone, username, password, taluk_id, availability) VALUES(?,?,?,?,?,?)',
+        (f"{data['firstName']} {data['lastName']}",
+         data.get('phone'), data['username'], data['password'],
+         None, data.get('availability'))
+    )
     conn.commit()
 
-    cur.execute('SELECT * FROM volunteers WHERE username = ?', (username,))
-    vol = cur.fetchone()
-    return jsonify({'volunteer': sanitize_account(dict(vol))})
+    cur.execute('SELECT * FROM volunteers WHERE username = ?', (data['username'],))
+    return jsonify({'volunteer': sanitize_account(dict(cur.fetchone()))})
 
 
 @app.route('/api/volunteer/login', methods=['POST'])
 def login_volunteer():
     data = request.get_json() or {}
-    username = data.get('username')
-    password = data.get('password')
-
-    if not username or not password:
-        return jsonify({'error': 'Missing username/password'}), 400
 
     conn = get_db()
     cur = conn.cursor()
-    cur.execute('SELECT * FROM volunteers WHERE username = ? AND password = ?', (username, password))
+    cur.execute(
+        'SELECT * FROM volunteers WHERE username = ? AND password = ?',
+        (data.get('username'), data.get('password'))
+    )
     vol = cur.fetchone()
+
     if not vol:
         return jsonify({'error': 'Invalid credentials'}), 401
 
     return jsonify({'volunteer': sanitize_account(dict(vol))})
 
 
+@app.route('/api/volunteer/<int:volunteer_id>')
+def get_volunteer_profile(volunteer_id):
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute('SELECT * FROM volunteers WHERE id = ?', (volunteer_id,))
+    vol = cur.fetchone()
+    if not vol:
+        return jsonify({'error': 'Volunteer not found'}), 404
+
+    volunteer = sanitize_account(dict(vol))
+
+    # Duty history (safe)
+    try:
+        cur.execute('SELECT * FROM duty_history WHERE volunteer_id = ?', (volunteer_id,))
+        volunteer['duty_history'] = [dict(r) for r in cur.fetchall()]
+    except Exception:
+        volunteer['duty_history'] = []
+
+    return jsonify({'volunteer': volunteer})
+
+
+# ----------------- DEBUG -----------------
+
+@app.route('/api/db')
+def dump_db():
+    conn = get_db()
+    cur = conn.cursor()
+    tables = ['taluk', 'taluk_contact', 'resources', 'volunteers']
+    out = {}
+
+    for t in tables:
+        try:
+            cur.execute(f'SELECT * FROM {t}')
+            out[t] = [dict(r) for r in cur.fetchall()]
+        except Exception:
+            out[t] = []
+
+    return jsonify(out)
+
+
+# ----------------- START -----------------
+
 if __name__ == '__main__':
-    # initialize/upgrade DB schema on startup
     init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)
