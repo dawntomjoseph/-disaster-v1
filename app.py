@@ -99,9 +99,17 @@ def register_taluk():
         return jsonify({'error': 'Username already exists'}), 409
 
     cur.execute(
-        'INSERT INTO taluk(name, district, population, username, password, elevation) VALUES(?,?,?,?,?,?)',
-        (data['name'], data.get('district'), data.get('population'),
-         data['username'], data['password'], data.get('elevation'))
+        'INSERT INTO taluk(name, district, population, username, password, elevation, latitude, longitude) VALUES(?,?,?,?,?,?,?,?)',
+        (
+            data['name'],
+            data.get('district'),
+            data.get('population'),
+            data['username'],
+            data['password'],
+            data.get('elevation'),
+            data.get('latitude'),
+            data.get('longitude')
+        )
     )
     conn.commit()
 
@@ -123,6 +131,44 @@ def login_taluk():
         return jsonify({'error': 'Invalid credentials'}), 401
 
     return jsonify({'taluk': sanitize_account(dict(taluk))})
+
+
+@app.route('/api/taluk/contact', methods=['POST'])
+def upsert_taluk_contact():
+    data = request.get_json() or {}
+
+    taluk_name = data.get('name')
+    if not taluk_name:
+        return jsonify({'error': 'Missing taluk name'}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute('SELECT id FROM taluk WHERE name = ?', (taluk_name,))
+    taluk = cur.fetchone()
+    if not taluk:
+        return jsonify({'error': 'Taluk not found'}), 404
+
+    officer_name = data.get('officerName')
+    phone = data.get('phone')
+    email = data.get('email')
+
+    cur.execute('SELECT id FROM taluk_contact WHERE taluk_id = ?', (taluk['id'],))
+    existing = cur.fetchone()
+
+    if existing:
+        cur.execute(
+            'UPDATE taluk_contact SET officer_name = ?, phone = ?, email = ? WHERE taluk_id = ?',
+            (officer_name, phone, email, taluk['id'])
+        )
+    else:
+        cur.execute(
+            'INSERT INTO taluk_contact(taluk_id, officer_name, phone, email) VALUES(?,?,?,?)',
+            (taluk['id'], officer_name, phone, email)
+        )
+
+    conn.commit()
+    return jsonify({'status': 'ok'})
 
 
 # ----------------- RESOURCES -----------------

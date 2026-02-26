@@ -20,7 +20,9 @@ def init_db():
         population INTEGER,
         username TEXT,
         password TEXT,
-        elevation REAL
+        elevation REAL,
+        latitude REAL,
+        longitude REAL
     )
     """)
 
@@ -79,6 +81,8 @@ def init_db():
 
     ensure_column('taluk', 'username', 'TEXT')
     ensure_column('taluk', 'password', 'TEXT')
+    ensure_column('taluk', 'latitude', 'REAL')
+    ensure_column('taluk', 'longitude', 'REAL')
     ensure_column('volunteers', 'username', 'TEXT')
     ensure_column('volunteers', 'password', 'TEXT')
 

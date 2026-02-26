@@ -8,7 +8,6 @@
 <body>
 
 <div class="container">
-
     <div class="register-section">
 
         <div class="badge">NEW TALUK</div>
@@ -19,37 +18,54 @@
         <form id="registerForm">
 
             <div class="form-group">
-                <label>Taluk Name</label>
+                <label for="talukName">Taluk Name</label>
                 <input type="text" id="talukName" required>
             </div>
 
             <div class="form-group">
-                <label>Population</label>
-                <input type="number" id="population" required>
+                <label for="population">Population</label>
+                <input type="number" id="population" min="0" required>
             </div>
 
             <div class="form-group">
-                <label>District</label>
+                <label for="elevation">Elevation (in meters)</label>
+                <input type="number" id="elevation" min="0" step="0.01" required>
+            </div>
+
+            <!-- NEW LATITUDE FIELD -->
+            <div class="form-group">
+                <label for="latitude">Latitude</label>
+                <input type="number" id="latitude" step="0.000001" min="-90" max="90" required>
+            </div>
+
+            <!-- NEW LONGITUDE FIELD -->
+            <div class="form-group">
+                <label for="longitude">Longitude</label>
+                <input type="number" id="longitude" step="0.000001" min="-180" max="180" required>
+            </div>
+
+            <div class="form-group">
+                <label for="district">District</label>
                 <input type="text" id="district" required>
             </div>
 
             <div class="form-group">
-                <label>Email</label>
+                <label for="email">Email</label>
                 <input type="email" id="email" required>
             </div>
 
             <div class="form-group">
-                <label>Phone Number</label>
+                <label for="phone">Phone Number</label>
                 <input type="tel" id="phone" required>
             </div>
 
             <div class="form-group">
-                <label>Username</label>
+                <label for="username">Username</label>
                 <input type="text" id="username" required>
             </div>
 
             <div class="form-group">
-                <label>Password</label>
+                <label for="password">Password</label>
                 <input type="password" id="password" required>
             </div>
 
@@ -65,40 +81,35 @@
         </div>
 
     </div>
-
 </div>
 
 <!-- SUCCESS POPUP -->
 <div id="successPopup" class="popup">
     <div class="popup-content">
-
         <div class="checkmark">✓</div>
-
         <h2>Registration Successful</h2>
-
         <p>Your Taluk account has been created.</p>
-
         <button onclick="goToHome()">Go to Home</button>
-
     </div>
 </div>
 
 <script>
 
-/* Handle Registration */
 document.getElementById("registerForm").addEventListener("submit", function(e) {
 
     e.preventDefault();
 
     const talukName = document.getElementById("talukName").value.trim();
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-    const population = parseInt(document.getElementById("population").value, 10) || 0;
+    const population = parseInt(document.getElementById("population").value) || 0;
+    const elevation = parseFloat(document.getElementById("elevation").value) || 0;
+    const latitude = parseFloat(document.getElementById("latitude").value) || 0;
+    const longitude = parseFloat(document.getElementById("longitude").value) || 0;
     const district = document.getElementById("district").value.trim();
     const email = document.getElementById("email").value;
     const phone = document.getElementById("phone").value;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
 
-    // POST to backend to create/register taluk
     fetch('/api/taluk/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,31 +119,37 @@ document.getElementById("registerForm").addEventListener("submit", function(e) {
             password: password,
             district: district,
             population: population,
-            elevation: 0
+            elevation: elevation,
+            latitude: latitude,
+            longitude: longitude
         })
     })
-    .then(r => r.json())
-    .then(data => {
-        if (data.error) {
-            alert('Registration failed: ' + data.error);
-            return;
+    .then(async (res) => {
+        const contentType = res.headers.get('content-type') || '';
+        let data;
+
+        if (contentType.includes('application/json')) {
+            data = await res.json();
+        } else {
+            const text = await res.text();
+            throw new Error(`Server returned non-JSON response (status ${res.status}). ${text.slice(0, 120)}`);
         }
-        // save basic info to localStorage for quick access
-        localStorage.setItem('loggedInTaluk', data.taluk.name);
-        // show success and redirect
+
+        if (!res.ok || data.error) {
+            throw new Error(data.error || `Request failed with status ${res.status}`);
+        }
+
+        localStorage.setItem("loggedInTaluk", data.taluk.name);
         document.getElementById("successPopup").style.display = "flex";
     })
     .catch(err => {
-        alert('Registration failed: ' + err);
+        alert("Registration failed: " + err.message);
     });
 
 });
 
-/* Redirect to Home */
 function goToHome() {
-
     window.location.href = "../homepage/index.html";
-
 }
 
 </script>
