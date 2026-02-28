@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="admin_login.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <h1>Admin Login</h1>
+        <p class="subtitle">Authorized Access Only</p>
+
+        <form onsubmit="adminLogin(event)">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+    </div>
+
+    <!-- ✅ ADD SCRIPT HERE -->
+    <script>
+        function adminLogin(e) {
+            e.preventDefault();
+
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            fetch("/api/admin/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    localStorage.setItem("adminLoggedIn", "true");
+                    window.location.href = "admin_dashboard.html";
+                } else {
+                    alert(data.error || "Invalid credentials");
+                }
+            })
+            .catch(() => {
+                alert("Server error. Please try again.");
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Taluk Dashboard</title>
+    <link rel="stylesheet" href="taluk_home.css">
+</head>
+<body>
+
+<header class="top-bar">
+
+    <div class="logo">Taluk Portal</div>
+
+    <div>
+
+        <button onclick="openProfile()" class="profile-btn">
+            Profile
+        </button>
+
+        <button onclick="logout()" class="logout-btn">
+            Logout
+        </button>
+
+    </div>
+
+</header>
+
+
+<div class="main-content">
+
+    <!-- Welcome -->
+    <div class="welcome-card">
+
+        <h1 id="welcomeText">Welcome</h1>
+
+        <p class="welcome-sub">
+            Manage disaster response and coordinate resources efficiently.
+        </p>
+
+    </div>
+
+
+    <!-- ✅ NEW RISK STATUS CARD -->
+    <div class="risk-card risk-low" id="riskCard">
+
+        <div class="risk-header">
+
+            <div class="risk-title">Risk Status</div>
+
+            <div class="risk-badge" id="riskLevel">
+                LOW
+            </div>
+
+        </div>
+
+        <div class="risk-row">
+            🌦 Weather:
+            <span id="riskWeather">Clear Sky</span>
+        </div>
+
+        <div class="risk-row">
+            🤖 AI Alert:
+            <span id="riskAlert">No threats detected</span>
+        </div>
+
+        <div class="risk-row">
+            ⚠ Warning:
+            <span id="riskWarning">Safe conditions</span>
+        </div>
+
+    </div>
+
+
+    <!-- Dashboard Boxes -->
+    <div class="dashboard-container">
+
+        <div class="box" onclick="openManageResources()">
+            MANAGE<br>RESOURCES
+        </div>
+
+        <div class="box">
+            REQUEST<br>RESOURCES
+        </div>
+
+        <div class="box">
+            VOLUNTEER<br>MONITORING
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+/* Login check */
+document.addEventListener("DOMContentLoaded", function(){
+
+    const taluk = localStorage.getItem("loggedInTaluk");
+
+    if(!taluk){
+
+        window.location.href = "taluk_login.html";
+        return;
+
+    }
+
+    document.getElementById("welcomeText").innerText =
+        "Welcome, " + taluk + " 👋";
+
+
+    /* Risk data (later from ML / Weather API) */
+
+    const riskData = JSON.parse(localStorage.getItem("talukRisk")) || {
+
+        level:"LOW",
+        weather:"Clear Sky",
+        alert:"No threats detected",
+        warning:"Safe conditions"
+
+    };
+
+    applyRisk(riskData);
+
+});
+
+
+function applyRisk(risk){
+
+    const card = document.getElementById("riskCard");
+
+    card.classList.remove("risk-low","risk-medium","risk-high");
+
+    if(risk.level==="LOW")
+        card.classList.add("risk-low");
+
+    if(risk.level==="MEDIUM")
+        card.classList.add("risk-medium");
+
+    if(risk.level==="HIGH")
+        card.classList.add("risk-high");
+
+    document.getElementById("riskLevel").innerText = risk.level;
+    document.getElementById("riskWeather").innerText = risk.weather;
+    document.getElementById("riskAlert").innerText = risk.alert;
+    document.getElementById("riskWarning").innerText = risk.warning;
+
+}
+
+
+/* Navigation */
+
+function logout(){
+
+    localStorage.removeItem("loggedInTaluk");
+
+    window.location.href = "../homepage/index.html";
+
+}
+
+function openManageResources(){
+
+    window.location.href = "manage_resources.html";
+
+}
+
+function openProfile(){
+
+    window.location.href = "taluk_profile.html";
+
+}
+
+</script>
+
+</body>
+</html>

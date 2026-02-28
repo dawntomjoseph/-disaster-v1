@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="admin_dashboard.css">
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<div class="top-bar">
+    <div class="logo">Disaster Relief Admin</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <div class="welcome-card">
+        <h1>Admin Dashboard</h1>
+        <p class="welcome-sub">System overview & control panel</p>
+    </div>
+
+    <!-- ================= QUICK ACTIONS ================= -->
+    <div class="dashboard-container">
+        <div class="box" onclick="showVolunteers()">Volunteer List</div>
+        <div class="box" onclick="showTaluks()">Taluk List</div>
+    </div>
+    <!-- ================= FLOOD PREDICTION ================= -->
+<div class="data-card" style="margin-top:30px;">
+
+    <h2>Flood Risk Prediction</h2>
+
+    <label>Select Taluk:</label><br>
+    <select id="talukSelect"></select><br><br>
+
+    <button onclick="predictFlood()">Predict Flood Risk</button>
+
+    <h3 style="margin-top:20px;">
+        Predicted Risk:
+        <span id="predictionResult">--</span>
+    </h3>
+
+</div>
+
+    <!-- ================= DATA SECTION ================= -->
+    <div id="data-section" class="data-card hidden">
+        <h2 id="section-title">Volunteer List</h2>
+
+        <table id="data-table">
+            <thead>
+                <tr id="table-head"></tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+
+/* ---------- AUTH GUARD ---------- */
+if (localStorage.getItem("adminLoggedIn") !== "true") {
+    window.location.href = "../homepage/index.html";
+}
+
+function logout() {
+    localStorage.removeItem("adminLoggedIn");
+    window.location.href = "../homepage/index.html";
+}
+
+/* ---------- UI HELPERS ---------- */
+function showSection(title) {
+    document.getElementById("section-title").innerText = title;
+    document.getElementById("data-section").classList.remove("hidden");
+}
+
+/* ---------- VOLUNTEERS ---------- */
+function showVolunteers() {
+    showSection("Volunteer List");
+
+    fetch("/api/db")
+        .then(res => res.json())
+        .then(data => {
+            const head = document.getElementById("table-head");
+            const body = document.getElementById("table-body");
+
+            head.innerHTML = "<th>Name</th><th>Phone</th>";
+            body.innerHTML = "";
+
+            data.volunteers.forEach(v => {
+                body.innerHTML += `
+                    <tr>
+                        <td>${v.name}</td>
+                        <td>${v.phone || "-"}</td>
+                    </tr>`;
+            });
+        });
+}
+
+/* ---------- TALUKS ---------- */
+function showTaluks() {
+    showSection("Taluk List");
+
+    fetch("/api/taluk")
+        .then(res => res.json())
+        .then(data => {
+            const head = document.getElementById("table-head");
+            const body = document.getElementById("table-body");
+
+            head.innerHTML = "<th>Taluk Name</th><th>View Resources</th>";
+            body.innerHTML = "";
+
+            data.taluks.forEach(t => {
+                body.innerHTML += `
+                    <tr>
+                        <td>${t.name}</td>
+                        <td class="eye-cell"
+                            onclick="viewResources('${t.name}')">👁</td>
+                    </tr>`;
+            });
+        });
+}
+
+/* ---------- RESOURCES ---------- */
+function viewResources(talukName) {
+    fetch(`/api/resources?talukName=${talukName}`)
+        .then(res => res.json())
+        .then(data => {
+            alert(
+                `Resources for ${talukName}\n\n` +
+                `Boats: ${data.resources?.boats || 0}\n` +
+                `Rescue Vehicles: ${data.resources?.rescue_vehicles || 0}\n` +
+                `Relief Camps: ${data.resources?.relief_camps || 0}`
+            );
+        });
+}
+
+/* ---------- LOAD TALUK DROPDOWN ---------- */
+function loadTalukDropdown() {
+
+    fetch("/api/taluk")
+        .then(res => res.json())
+        .then(data => {
+
+            const select = document.getElementById("talukSelect");
+            select.innerHTML = "";
+
+            data.taluks.forEach(t => {
+                select.innerHTML +=
+                    `<option value="${t.name}">
+                        ${t.name}
+                     </option>`;
+            });
+        });
+}
+
+/* ---------- FLOOD PREDICTION ---------- */
+function predictFlood() {
+
+    fetch("/api/predict_flood", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            taluk: document.getElementById("talukSelect").value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+    document.getElementById("predictionResult").innerText =
+        `${data.prediction}
+         (Rain24h: ${data.rain_3day} mm,
+         Elevation: ${data.elevation} m)`;
+});
+}
+
+/* ---------- AUTO LOAD ---------- */
+loadTalukDropdown();
+
+</script>
+</body>
+</html>

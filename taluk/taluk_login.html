@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taluk Login</title>
+    <link rel="stylesheet" href="taluk_login.css">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="login-section">
+
+        <div class="badge">EXISTING USER</div>
+
+        <h1>Taluk Login</h1>
+
+        <p class="subtitle">Welcome back</p>
+
+        <form id="loginForm">
+
+            <div class="form-group">
+
+                <label>Username/taluk name</label>
+
+                <input type="text" id="username" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Password</label>
+
+                <input type="password" id="password" required>
+
+            </div>
+
+            <button type="submit" class="submit-btn login-btn">
+
+                ✓ Login
+
+            </button>
+
+        </form>
+
+        <div class="new-registration-link">
+
+            <p>
+                Not registered yet?
+                <a href="taluk_register.html">Click here to register</a>
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* SIMPLE LOGIN — accepts any username */
+
+document.getElementById("loginForm").addEventListener("submit", function(e){
+
+    e.preventDefault();
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    fetch('/api/taluk/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    })
+    .then(r => {
+        if (r.status === 200) return r.json();
+        throw new Error('Invalid credentials');
+    })
+    .then(data => {
+        // save logged in taluk name
+        localStorage.setItem("loggedInTaluk", data.taluk.name);
+        // go to dashboard
+        window.location.href = "taluk_home.html";
+    })
+    .catch(err => {
+        alert('Invalid username or password.');
+    });
+
+});
+
+</script>
+
+</body>
+</html>

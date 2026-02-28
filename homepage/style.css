@@ -1,0 +1,162 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    height: 100vh;
+    background-image: url('../new.png');
+
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* Darker overlay */
+.overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1;
+}
+
+/* ===== MAIN BOX: MORE TRANSPARENT + GLOW ANIMATION ===== */
+.login-box {
+    background: rgba(255, 255, 255, 0.40); /* MORE transparent */
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 60px 50px 45px;
+    text-align: center;
+    max-width: 520px;
+    width: 100%;
+    z-index: 2;
+    position: relative;
+    border: 1px solid rgba(18, 120, 66, 0.2);
+
+    /* SUBTLE GREEN GLOW ANIMATION */
+    box-shadow:
+        0 0 15px rgba(18, 120, 66, 0.25),
+        0 15px 50px rgba(0, 0, 0, 0.25);
+
+    animation: greenGlow 4s ease-in-out infinite alternate;
+}
+
+/* Green glow animation */
+@keyframes greenGlow {
+    from {
+        box-shadow:
+            0 0 12px rgba(18, 120, 66, 0.20),
+            0 15px 50px rgba(0, 0, 0, 0.25);
+    }
+    to {
+        box-shadow:
+            0 0 25px rgba(18, 120, 66, 0.35),
+            0 15px 50px rgba(0, 0, 0, 0.25);
+    }
+}
+
+/* Brand badge */
+.brand-badge {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(18, 120, 66, 0.12);
+    color: #0a5a37;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* Title */
+.login-box h1 {
+    color: #1f2933;
+    margin-bottom: 5px;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+/* Tiny professional tagline */
+.tagline {
+    color: #0a5a37;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* Subtitle */
+.login-box .subtitle {
+    color: #374151;
+    margin-bottom: 20px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Divider */
+.divider {
+    width: 70%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+}
+
+/* Sign in text */
+.login-box h3 {
+    color: #1f2933;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+/* Stack buttons vertically */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Glossy transparent dark green buttons */
+.btn {
+    width: 85%;
+    text-align: center;
+    background: linear-gradient(
+        180deg,
+        rgba(26, 128, 80, 0.85) 0%,
+        rgba(10, 90, 55, 0.80) 100%
+    );
+    color: white;
+    padding: 13px 0;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(26, 128, 80, 0.9);
+
+    box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.25),
+        0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover effect */
+.btn:hover {
+    background: linear-gradient(
+        180deg,
+        rgba(30, 150, 95, 0.90) 0%,
+        rgba(12, 95, 60, 0.85) 100%
+    );
+    transform: translateY(-2px);
+}
+
+/* Footer */
+.footer-text {
+    margin-top: 22px;
+    font-size: 12px;
+    color: #374151;
+    opacity: 0.8;
+}
