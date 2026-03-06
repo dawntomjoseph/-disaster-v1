@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Volunteer Dashboard</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="volunteer_dashboard.css">
+
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+
+<div class="logo">
+Volunteer Disaster Response Portal
+</div>
+
+<div class="top-actions">
+
+<button class="profile-btn"
+onclick="go('volunteer_profile.html')">
+Profile
+</button>
+
+<button class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</header>
+
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+<!-- Welcome -->
+<div class="welcome-card">
+
+<h1>
+Welcome,
+<span id="volName">Volunteer</span>
+</h1>
+
+<p class="welcome-sub">
+Assigned Taluk Disaster Management System
+</p>
+
+</div>
+
+
+<!-- TALUK WARNING CARD -->
+<div class="warning-card">
+
+<div class="warning-header">
+
+<h2>Taluk Warning Status</h2>
+
+<div id="warningBadge"
+class="warning-badge safe">
+SAFE
+</div>
+
+</div>
+
+<p id="warningMessage">
+No active warnings from Taluk Office
+</p>
+
+</div>
+
+
+<!-- ACTIVITY LOG -->
+<div class="activity-card">
+
+<div class="activity-header">
+
+<h2>Volunteer Duty History</h2>
+
+<div class="gov-badge">
+Official Record
+</div>
+
+</div>
+
+
+<table class="activity-table">
+
+<thead>
+
+<tr>
+
+<th>Duty ID</th>
+<th>Date</th>
+<th>Location</th>
+<th>Duty Type</th>
+<th>Status</th>
+<th>Assigned By</th>
+
+</tr>
+
+</thead>
+
+<tbody id="activityTableBody">
+
+<tr>
+
+<td>DUTY-001</td>
+<td>12 Feb 2026</td>
+<td>Aluva Flood Zone</td>
+<td>Evacuation Support</td>
+<td class="status-completed">Completed</td>
+<td>Ernakulam Taluk Office</td>
+
+</tr>
+
+<tr>
+
+<td>DUTY-002</td>
+<td>18 Feb 2026</td>
+<td>Perumbavoor Camp</td>
+<td>Relief Distribution</td>
+<td class="status-completed">Completed</td>
+<td>Ernakulam Taluk Office</td>
+
+</tr>
+
+<tr>
+
+<td>DUTY-003</td>
+<td>22 Feb 2026</td>
+<td>Kothamangalam</td>
+<td>Emergency Standby</td>
+<td class="status-active">Active</td>
+<td>Ernakulam Taluk Office</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+</main>
+
+
+<script>
+
+const volunteer =
+JSON.parse(localStorage.getItem("volunteer"));
+
+document.getElementById("volName").innerText =
+volunteer?.name || "Volunteer";
+
+
+
+/* Navigation */
+function go(page){
+
+window.location.href = page;
+
+}
+
+
+/* Logout */
+function logout(){
+
+localStorage.clear();
+
+window.location.href = "../homepage/index.html";
+
+}
+
+</script>
+
+</body>
+</html>

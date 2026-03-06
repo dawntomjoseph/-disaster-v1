@@ -1,0 +1,112 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Background */
+body {
+    min-height: 100vh;
+    background-image: url('../image1.png');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* Dark overlay (NON-BLOCKING) */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Glass card */
+.login-container {
+    position: relative;
+    z-index: 1;
+    width: 380px;
+    padding: 45px 40px;
+    border-radius: 20px;
+    text-align: center;
+
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 0 18px rgba(18, 120, 66, 0.25),
+        0 20px 55px rgba(0, 0, 0, 0.3);
+}
+
+/* Heading */
+.login-container h1 {
+    font-size: 28px;
+    color: #1f2933;
+    margin-bottom: 8px;
+}
+
+/* Subtitle */
+.subtitle {
+    font-size: 14px;
+    color: #374151;
+    margin-bottom: 30px;
+}
+
+/* Form */
+.form-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.15);
+    font-size: 14px;
+    outline: none;
+}
+
+/* Login button */
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #27ae60;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-btn:hover {
+    background: #229954;
+    box-shadow: 0 5px 20px rgba(39, 174, 96, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 450px) {
+    .login-container {
+        width: 90%;
+    }
+}
