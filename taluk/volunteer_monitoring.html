@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Volunteer Monitoring</title>
+    <link rel="stylesheet" href="volunteer_monitoring.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo">Taluk Portal</div>
+    <div>
+        <button onclick="openProfile()" class="profile-btn">Profile</button>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+    </div>
+</header>
+
+<div class="main-content">
+    <div class="welcome-card">
+        <h1>Volunteer Monitoring</h1>
+        <p class="welcome-sub">Assign volunteers to monitoring duties and locations.</p>
+    </div>
+
+    <div class="volunteers-container">
+        <table class="volunteers-table">
+            <thead>
+                <tr>
+                    <th>Volunteer Name</th>
+                    <th>Assignment Location</th>
+                    <th>Action</th>
+                    <th>Assign Duty</th>
+                </tr>
+            </thead>
+            <tbody id="volunteersList">
+                <!-- Volunteers will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const taluk = localStorage.getItem("loggedInTaluk");
+    if(!taluk){
+        window.location.href = "taluk_login.html";
+        return;
+    }
+
+    loadVolunteers();
+});
+
+function logout(){
+    localStorage.removeItem("loggedInTaluk");
+    window.location.href = "../homepage/index.html";
+}
+
+function openProfile(){
+    window.location.href = "taluk_profile.html";
+}
+
+async function loadVolunteers(){
+    const taluk = localStorage.getItem("loggedInTaluk");
+    try {
+        const response = await fetch('/api/volunteers');
+        const data = await response.json();
+        const volunteers = data.volunteers || [];
+
+        // Get monitored volunteers with details
+        const monResponse = await fetch(`/api/monitoring/details?taluk_name=${encodeURIComponent(taluk)}`);
+        const monData = await monResponse.json();
+        const monitoredMap = {};
+        
+        if(monData.monitored_details){
+            monData.monitored_details.forEach(item => {
+                monitoredMap[item.volunteer_name] = {
+                    active: true,
+                    location: item.assignment_location || ''
+                };
+            });
+        }
+
+        const list = document.getElementById("volunteersList");
+        list.innerHTML = "";
+
+        volunteers.forEach(name => {
+            const isMonitored = name in monitoredMap;
+            const location = isMonitored ? monitoredMap[name].location : '';
+            
+            const tr = document.createElement("tr");
+            tr.className = isMonitored ? "row-active" : "";
+            
+            tr.innerHTML = `
+                <td>${name}</td>
+                <td>
+                    <input type="text" class="location-input" placeholder="e.g., Relief Camp A, Riverbank" 
+                        value="${location}" data-volunteer="${name}" id="location-${name.replace(/\s+/g, '-')}" 
+                        ${isMonitored ? '' : 'disabled'} style="width: 100%; padding: 5px;">
+                </td>
+                <td>
+                    <button class="save-location-btn" onclick="saveLocation('${name}')" ${isMonitored ? '' : 'disabled'} 
+                        style="padding: 5px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Save
+                    </button>
+                    <span id="save-status-${name.replace(/\s+/g, '-')}" style="margin-left: 5px; font-size: 12px; color: green; display: none;">✓</span>
+                </td>
+                <td>
+                    <label class="switch">
+                        <input type="checkbox" ${isMonitored ? 'checked' : ''} 
+                            onchange="toggleMonitoring('${name}', this)">
+                        <span class="slider"></span>
+                    </label>
+                </td>
+            `;
+
+            list.appendChild(tr);
+        });
+    } catch (err) {
+        console.error("Failed to load volunteers:", err);
+    }
+}
+
+async function toggleMonitoring(volunteerName, checkbox){
+    const taluk = localStorage.getItem("loggedInTaluk");
+    const isChecked = checkbox.checked;
+    const row = checkbox.closest('tr');
+    const locationInput = row.querySelector('.location-input');
+    const saveBtn = row.querySelector('.save-location-btn');
+    
+    try {
+        if (isChecked) {
+            // Enable location input and save button
+            locationInput.disabled = false;
+            if(saveBtn) saveBtn.disabled = false;
+            row.classList.add('row-active');
+            
+            // Add to monitoring
+            const response = await fetch('/api/monitoring/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    taluk_name: taluk,
+                    volunteer_name: volunteerName,
+                    assignment_location: locationInput.value || ''
+                })
+            });
+            const data = await response.json();
+            console.log('Added:', data.status);
+        } else {
+            // Disable location input and save button
+            locationInput.disabled = true;
+            if(saveBtn) saveBtn.disabled = true;
+            row.classList.remove('row-active');
+            
+            // Remove from monitoring
+            const response = await fetch('/api/monitoring/remove', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    taluk_name: taluk,
+                    volunteer_name: volunteerName
+                })
+            });
+            const data = await response.json();
+            console.log('Removed:', data.status);
+        }
+    } catch (err) {
+        console.error("Failed to toggle monitoring:", err);
+        checkbox.checked = !isChecked;
+    }
+}
+
+// Save location function
+async function saveLocation(volunteerName){
+    const taluk = localStorage.getItem("loggedInTaluk");
+    const locationInputId = 'location-' + volunteerName.replace(/\s+/g, '-');
+    const statusId = 'save-status-' + volunteerName.replace(/\s+/g, '-');
+    
+    const locationInput = document.getElementById(locationInputId);
+    const statusSpan = document.getElementById(statusId);
+    
+    if(!locationInput || !taluk) return;
+    
+    const location = locationInput.value.trim();
+    
+    try {
+        const response = await fetch('/api/monitoring/update-location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                taluk_name: taluk,
+                volunteer_name: volunteerName,
+                assignment_location: location
+            })
+        });
+        
+        const data = await response.json();
+        console.log('Location save response:', data);
+        
+        if(response.ok){
+            // Show success indicator
+            if(statusSpan){
+                statusSpan.style.display = 'inline';
+                statusSpan.style.color = 'green';
+                statusSpan.textContent = '✓ Saved';
+                setTimeout(() => {
+                    statusSpan.textContent = '✓';
+                }, 1500);
+            }
+            console.log('Location saved successfully for', volunteerName);
+        } else {
+            if(statusSpan){
+                statusSpan.style.display = 'inline';
+                statusSpan.style.color = 'red';
+                statusSpan.textContent = '✗ Failed';
+            }
+            console.error('Failed to save location:', response.status);
+        }
+    } catch (err) {
+        console.error("Error saving location:", err);
+        if(statusSpan){
+            statusSpan.style.display = 'inline';
+            statusSpan.style.color = 'red';
+            statusSpan.textContent = '✗ Error';
+        }
+    }
+}
+</script>
+
+</body>
+</html>

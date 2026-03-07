@@ -1,0 +1,269 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    background-image: url('../image1.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.45);
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+
+.top-bar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 16px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(20, 30, 40, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    z-index: 10;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.5px;
+}
+
+.logout-btn {
+    padding: 8px 20px;
+    border-radius: 25px;
+    border: 1px solid rgba(255,255,255,0.4);
+    background: transparent;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: rgba(255,59,48,0.85);
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+.profile-btn {
+    padding: 8px 20px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+}
+
+.profile-btn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.main-content {
+    position: relative;
+    z-index: 1;
+    margin-top: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.welcome-card {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 20px 40px;
+}
+
+.welcome-card h1 {
+    font-size: 34px;
+    color: white;
+    font-weight: 600;
+}
+
+.welcome-sub {
+    margin-top: 8px;
+    font-size: 16px;
+    color: rgba(255,255,255,0.8);
+}
+
+.volunteers-list {
+    width: 100%;
+    max-width: 800px;
+}
+
+.volunteer-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 15px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 25px;
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.45);
+}
+
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #27ae60;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #27ae60;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Table Styling */
+.volunteers-container {
+    width: 100%;
+    max-width: 1000px;
+}
+
+.volunteers-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+.volunteers-table thead {
+    background: rgba(255,255,255,0.2);
+    border-bottom: 2px solid rgba(255,255,255,0.3);
+}
+
+.volunteers-table th {
+    padding: 18px 20px;
+    text-align: left;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.volunteers-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    transition: all 0.3s ease;
+}
+
+.volunteers-table tbody tr:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.volunteers-table tbody tr.row-active {
+    background: rgba(46, 204, 113, 0.1);
+}
+
+.volunteers-table td {
+    padding: 18px 20px;
+    color: rgba(255,255,255,0.9);
+    font-size: 15px;
+}
+
+.location-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.location-input::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+.location-input:focus {
+    outline: none;
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.4);
+}
+
+.location-input:disabled {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.4);
+    cursor: not-allowed;
+}

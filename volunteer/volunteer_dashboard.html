@@ -79,7 +79,7 @@ No active warnings from Taluk Office
 
 <div class="activity-header">
 
-<h2>Volunteer Duty History</h2>
+<h2>Assigned Duties</h2>
 
 <div class="gov-badge">
 Official Record
@@ -94,12 +94,12 @@ Official Record
 
 <tr>
 
-<th>Duty ID</th>
-<th>Date</th>
+<th>Taluk Name</th>
+<th>Assigned Date</th>
 <th>Location</th>
-<th>Duty Type</th>
 <th>Status</th>
 <th>Assigned By</th>
+<th>Action</th>
 
 </tr>
 
@@ -107,38 +107,7 @@ Official Record
 
 <tbody id="activityTableBody">
 
-<tr>
-
-<td>DUTY-001</td>
-<td>12 Feb 2026</td>
-<td>Aluva Flood Zone</td>
-<td>Evacuation Support</td>
-<td class="status-completed">Completed</td>
-<td>Ernakulam Taluk Office</td>
-
-</tr>
-
-<tr>
-
-<td>DUTY-002</td>
-<td>18 Feb 2026</td>
-<td>Perumbavoor Camp</td>
-<td>Relief Distribution</td>
-<td class="status-completed">Completed</td>
-<td>Ernakulam Taluk Office</td>
-
-</tr>
-
-<tr>
-
-<td>DUTY-003</td>
-<td>22 Feb 2026</td>
-<td>Kothamangalam</td>
-<td>Emergency Standby</td>
-<td class="status-active">Active</td>
-<td>Ernakulam Taluk Office</td>
-
-</tr>
+<!-- Assigned duties will be loaded here -->
 
 </tbody>
 
@@ -158,7 +127,61 @@ JSON.parse(localStorage.getItem("volunteer"));
 document.getElementById("volName").innerText =
 volunteer?.name || "Volunteer";
 
+loadAssignedDuties();
 
+/* Load assigned duties */
+async function loadAssignedDuties(){
+    const volunteerId = localStorage.getItem("volunteerId");
+    if(!volunteerId) return;
+
+    try {
+        const response = await fetch(`/api/volunteer/${volunteerId}`);
+        const data = await response.json();
+        const duties = data.volunteer.assigned_duties || [];
+
+        const tbody = document.getElementById("activityTableBody");
+        tbody.innerHTML = "";
+
+        // Update warning status badge based on assigned duties
+        const warningBadge = document.getElementById("warningBadge");
+        const warningMessage = document.getElementById("warningMessage");
+
+        // Check if there are any active (non-completed) duties
+        const hasActiveDuties = duties.some(duty => duty.status === 'Active');
+
+        if(hasActiveDuties){
+            // There are active assigned duties
+            warningBadge.textContent = "ACTIVE";
+            warningBadge.className = "warning-badge active";
+            warningMessage.textContent = "You have active assigned duties from Taluk Office";
+        } else {
+            // No active duties (all completed or none assigned)
+            warningBadge.textContent = "SAFE";
+            warningBadge.className = "warning-badge safe";
+            warningMessage.textContent = "No active assignments at this moment";
+        }
+
+        duties.forEach((duty, index) => {
+            const tr = document.createElement("tr");
+            const isCompleted = duty.status === 'Completed';
+            tr.innerHTML = `
+                <td>${duty.taluk}</td>
+                <td>${duty.assigned_date}</td>
+                <td>${duty.location || 'Not specified'}</td>
+                <td class="${isCompleted ? 'status-completed' : 'status-active'}">${duty.status}</td>
+                <td>${duty.assigned_by}</td>
+                <td><button class="completed-btn" onclick="markDutyCompleted('${duty.taluk}', this)" ${isCompleted ? 'disabled' : ''}>✓ Completed</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        if(duties.length === 0){
+            tbody.innerHTML = "<tr><td colspan='6'>No assigned duties</td></tr>";
+        }
+    } catch (err) {
+        console.error("Failed to load assigned duties:", err);
+    }
+}
 
 /* Navigation */
 function go(page){
@@ -167,6 +190,63 @@ window.location.href = page;
 
 }
 
+
+/* Mark duty as completed */
+async function markDutyCompleted(talukName, buttonElement){
+    const volunteerId = localStorage.getItem("volunteerId");
+    const volunteerName = localStorage.getItem("volunteerName");
+    
+    if(!volunteerId || !volunteerName) return;
+
+    try {
+        const response = await fetch('/api/duty/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                taluk_name: talukName,
+                volunteer_name: volunteerName
+            })
+        });
+        
+        if(response.ok){
+            // Disable button and change row status
+            buttonElement.disabled = true;
+            const row = buttonElement.parentElement.parentElement;
+            row.cells[3].className = 'status-completed';
+            row.cells[3].textContent = 'Completed';
+            
+            // Check if all duties are now completed
+            const tbody = document.getElementById("activityTableBody");
+            const rows = tbody.querySelectorAll("tr");
+            let hasActiveDuties = false;
+            
+            for(let row of rows){
+                if(row.cells && row.cells[3] && row.cells[3].textContent === 'Active'){
+                    hasActiveDuties = true;
+                    break;
+                }
+            }
+            
+            // Update warning badge
+            const warningBadge = document.getElementById("warningBadge");
+            const warningMessage = document.getElementById("warningMessage");
+            
+            if(hasActiveDuties){
+                warningBadge.textContent = "ACTIVE";
+                warningBadge.className = "warning-badge active";
+                warningMessage.textContent = "You have active assigned duties from Taluk Office";
+            } else {
+                warningBadge.textContent = "SAFE";
+                warningBadge.className = "warning-badge safe";
+                warningMessage.textContent = "No active assignments at this moment";
+            }
+            
+            console.log('Duty marked as completed');
+        }
+    } catch (err) {
+        console.error("Failed to mark duty as completed:", err);
+    }
+}
 
 /* Logout */
 function logout(){

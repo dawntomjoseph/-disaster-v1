@@ -34,6 +34,20 @@ def init_db():
         FOREIGN KEY (taluk_id) REFERENCES taluk(id)
     )
     """)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS monitoring (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        taluk_name TEXT,
+        volunteer_name TEXT,
+        assigned_date TEXT DEFAULT CURRENT_TIMESTAMP,
+        completion_status TEXT DEFAULT 'Active',
+        assignment_location TEXT,
+        mon_availability TEXT,
+        FOREIGN KEY (taluk_name) REFERENCES taluk(name),
+        FOREIGN KEY (volunteer_name) REFERENCES volunteers(name),
+        FOREIGN KEY (mon_availability) REFERENCES volunteers(availability)
+    )
+    """)
 
     cur.execute("""
     CREATE TABLE IF NOT EXISTS volunteers (
@@ -81,6 +95,9 @@ def init_db():
     ensure_column('taluk', 'password', 'TEXT')
     ensure_column('volunteers', 'username', 'TEXT')
     ensure_column('volunteers', 'password', 'TEXT')
+    ensure_column('monitoring', 'assigned_date', 'TEXT')
+    ensure_column('monitoring', 'completion_status', 'TEXT')
+    ensure_column('monitoring', 'assignment_location', 'TEXT')
 
     db.commit()
     db.close()

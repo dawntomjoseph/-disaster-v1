@@ -550,14 +550,147 @@ def get_volunteer_profile(volunteer_id):
 
     volunteer = sanitize_account(dict(vol))
 
-    # Duty history (safe)
-    try:
-        cur.execute('SELECT * FROM duty_history WHERE volunteer_id = ?', (volunteer_id,))
-        volunteer['duty_history'] = [dict(r) for r in cur.fetchall()]
-    except Exception:
-        volunteer['duty_history'] = []
+    # Assigned duties from monitoring
+    cur.execute('SELECT taluk_name, assigned_date, completion_status, assignment_location FROM monitoring WHERE volunteer_name = ?', (vol['name'],))
+    assigned_duties = []
+    for row in cur.fetchall():
+        status = row['completion_status'] or 'Active'
+        assigned_duties.append({
+            'taluk': row['taluk_name'],
+            'assigned_date': row['assigned_date'] or 'N/A',
+            'status': status,
+            'assigned_by': row['taluk_name'] + ' Taluk Office',
+            'location': row['assignment_location'] or 'Not specified'
+        })
+    volunteer['assigned_duties'] = assigned_duties
 
     return jsonify({'volunteer': volunteer})
+
+
+@app.route('/api/volunteers')
+def get_volunteers():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('SELECT name FROM volunteers')
+    volunteers = [r['name'] for r in cur.fetchall()]
+    return jsonify({'volunteers': volunteers})
+
+
+# ----------------- MONITORING -----------------
+
+@app.route('/api/monitoring/add', methods=['POST'])
+def add_monitoring():
+    data = request.get_json() or {}
+    taluk_name = data.get('taluk_name')
+    volunteer_name = data.get('volunteer_name')
+    assignment_location = data.get('assignment_location', '')
+
+    if not taluk_name or not volunteer_name:
+        return jsonify({'error': 'Missing taluk_name or volunteer_name'}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    # Check if there's already an active assignment
+    cur.execute('SELECT id FROM monitoring WHERE taluk_name = ? AND volunteer_name = ? AND (completion_status IS NULL OR completion_status = "Active")', (taluk_name, volunteer_name))
+    existing_active = cur.fetchone()
+
+    if existing_active:
+        return jsonify({'status': 'already active'})
+    else:
+        # Create new active assignment (allows multiple assignments for history)
+        cur.execute('INSERT INTO monitoring (taluk_name, volunteer_name, assigned_date, completion_status, assignment_location) VALUES (?, ?, datetime("now"), "Active", ?)', (taluk_name, volunteer_name, assignment_location))
+        conn.commit()
+        return jsonify({'status': 'added'})
+
+@app.route('/api/monitoring/remove', methods=['POST'])
+def remove_monitoring():
+    data = request.get_json() or {}
+    taluk_name = data.get('taluk_name')
+    volunteer_name = data.get('volunteer_name')
+
+    if not taluk_name or not volunteer_name:
+        return jsonify({'error': 'Missing taluk_name or volunteer_name'}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute('DELETE FROM monitoring WHERE taluk_name = ? AND volunteer_name = ?', (taluk_name, volunteer_name))
+    conn.commit()
+    return jsonify({'status': 'removed'})
+
+
+@app.route('/api/monitoring', methods=['GET'])
+def get_monitoring():
+    taluk_name = request.args.get('taluk_name')
+    if not taluk_name:
+        return jsonify({'error': 'Missing taluk_name'}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('SELECT volunteer_name FROM monitoring WHERE taluk_name = ? AND (completion_status IS NULL OR completion_status = "Active")', (taluk_name,))
+    monitored = [r['volunteer_name'] for r in cur.fetchall()]
+    return jsonify({'monitored_volunteers': monitored})
+
+
+@app.route('/api/monitoring/details', methods=['GET'])
+def get_monitoring_details():
+    taluk_name = request.args.get('taluk_name')
+    if not taluk_name:
+        return jsonify({'error': 'Missing taluk_name'}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('SELECT volunteer_name, assignment_location FROM monitoring WHERE taluk_name = ? AND (completion_status IS NULL OR completion_status = "Active")', (taluk_name,))
+    monitored = [{'volunteer_name': r['volunteer_name'], 'assignment_location': r['assignment_location']} for r in cur.fetchall()]
+    return jsonify({'monitored_details': monitored})
+
+
+@app.route('/api/monitoring/update-location', methods=['POST'])
+def update_monitoring_location():
+    data = request.get_json() or {}
+    taluk_name = data.get('taluk_name')
+    volunteer_name = data.get('volunteer_name')
+    assignment_location = data.get('assignment_location', '')
+
+    if not taluk_name or not volunteer_name:
+        return jsonify({'error': 'Missing taluk_name or volunteer_name'}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    # Update the most recent active assignment
+    # SQLite doesn't support ORDER BY in UPDATE, so we use a subquery
+    cur.execute('''UPDATE monitoring SET assignment_location = ? 
+                   WHERE id = (
+                       SELECT id FROM monitoring 
+                       WHERE taluk_name = ? AND volunteer_name = ? 
+                       AND (completion_status IS NULL OR completion_status = "Active")
+                       ORDER BY assigned_date DESC LIMIT 1
+                   )''', 
+                (assignment_location, taluk_name, volunteer_name))
+    conn.commit()
+
+    return jsonify({'status': 'updated'})
+
+
+@app.route('/api/duty/complete', methods=['POST'])
+def complete_duty():
+    data = request.get_json() or {}
+    taluk_name = data.get('taluk_name')
+    volunteer_name = data.get('volunteer_name')
+
+    if not taluk_name or not volunteer_name:
+        return jsonify({'error': 'Missing taluk_name or volunteer_name'}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute('UPDATE monitoring SET completion_status = ? WHERE taluk_name = ? AND volunteer_name = ?', 
+                ('Completed', taluk_name, volunteer_name))
+    conn.commit()
+
+    return jsonify({'status': 'completed'})
 
 
 # ----------------- DEBUG -----------------
