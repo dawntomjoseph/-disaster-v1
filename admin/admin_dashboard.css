@@ -1,0 +1,168 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* ===== BACKGROUND ===== */
+body {
+    background-image: url('../image1.png');
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 0;
+}
+
+/* ===== NAVBAR ===== */
+.top-bar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 16px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(20,30,40,0.65);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    z-index: 10;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+}
+
+.logout-btn {
+    padding: 8px 22px;
+    border-radius: 22px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background: rgba(231,76,60,0.85);
+    border-color: transparent;
+}
+
+/* ===== MAIN ===== */
+.main-content {
+    position: relative;
+    z-index: 1;
+    margin-top: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ===== WELCOME ===== */
+.welcome-card {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.welcome-card h1 {
+    font-size: 34px;
+    color: white;
+}
+
+.welcome-sub {
+    color: rgba(255,255,255,0.8);
+    margin-top: 6px;
+}
+
+/* ===== ACTION CARDS ===== */
+.dashboard-container {
+    display: flex;
+    gap: 70px;
+    margin-bottom: 60px;
+}
+
+.box {
+    width: 260px;
+    height: 260px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(18px);
+    border-radius: 35px;
+    border: 1px solid rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.35s;
+}
+
+.box:hover {
+    transform: translateY(-10px) scale(1.04);
+}
+
+/* ===== DATA CARD ===== */
+.data-card {
+    width: 85%;
+    max-width: 900px;
+    padding: 30px;
+    border-radius: 25px;
+    background: rgba(255,255,255,0.14);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+}
+
+.data-card h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+/* ===== TABLE ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+tbody td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+tbody tr:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.eye-cell {
+    text-align: center;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+/* ===== UTIL ===== */
+.hidden {
+    display: none;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+    .dashboard-container {
+        flex-direction: column;
+        gap: 40px;
+    }
+}

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Taluk Dashboard</title>
+    <link rel="stylesheet" href="taluk_home.css">
+</head>
+<body>
+
+<header class="top-bar">
+
+    <div class="logo">Taluk Portal</div>
+
+    <div>
+
+        <button onclick="openProfile()" class="profile-btn">
+            Profile
+        </button>
+
+        <button onclick="logout()" class="logout-btn">
+            Logout
+        </button>
+
+    </div>
+
+</header>
+
+
+<div class="main-content">
+
+    <!-- Welcome -->
+    <div class="welcome-card">
+
+        <h1 id="welcomeText">Welcome</h1>
+
+        <p class="welcome-sub">
+            Manage disaster response and coordinate resources efficiently.
+        </p>
+
+    </div>
+
+
+    <!-- ✅ NEW RISK STATUS CARD -->
+    <div class="risk-card risk-low" id="riskCard">
+
+        <div class="risk-header">
+
+            <div class="risk-title">Risk Status</div>
+
+            <div class="risk-badge" id="riskLevel">
+                LOW
+            </div>
+
+        </div>
+
+        <div class="risk-row">
+            🌦 Weather:
+            <span id="riskWeather">Clear Sky</span>
+        </div>
+
+        <div class="risk-row">
+            🤖 AI Alert:
+            <span id="riskAlert">No threats detected</span>
+        </div>
+        <div class="risk-row">
+          🧠 AI Suggestions:
+            <ul id="aiSuggestions"></ul>
+        </div>
+        <div class="risk-row">
+            ⚠ Warning:
+            <span id="riskWarning">Safe conditions</span>
+        </div>
+
+    </div>
+
+
+    <!-- Dashboard Boxes -->
+    <div class="dashboard-container">
+
+        <div class="box" onclick="openManageResources()">
+            MANAGE<br>RESOURCES
+        </div>
+
+       <div class="box" onclick="openRequestResources()">
+        REQUEST<br>RESOURCES
+      </div>
+
+        <div class="box" onclick="openVolunteerMonitoring()">
+            VOLUNTEER<br>MONITORING
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const taluk = localStorage.getItem("loggedInTaluk");
+
+    if(!taluk){
+        window.location.href = "taluk_login.html";
+        return;
+    }
+
+    document.getElementById("welcomeText").innerText =
+        "Welcome, " + taluk + " 👋";
+
+    fetchRealPrediction();  
+
+});
+/* Navigation */
+
+function logout(){
+
+    localStorage.removeItem("loggedInTaluk");
+
+    window.location.href = "../homepage/index.html";
+
+}
+
+function openManageResources(){
+
+    window.location.href = "manage_resources.html";
+
+}
+
+function openProfile(){
+
+    window.location.href = "taluk_profile.html";
+
+
+}
+function openRequestResources(){
+    window.location.href = "request_resources.html";
+}
+
+function openVolunteerMonitoring(){
+
+    window.location.href = "volunteer_monitoring.html";
+
+}
+function applyRisk(data) {
+
+    document.getElementById("riskLevel").innerText = data.level;
+    document.getElementById("riskWeather").innerText = data.weather;
+    document.getElementById("riskAlert").innerText = data.alert;
+    document.getElementById("riskWarning").innerText = data.warning;
+
+    const card = document.getElementById("riskCard");
+    card.classList.remove("risk-low","risk-medium","risk-high");
+
+    if(data.level === "HIGH")
+        card.classList.add("risk-high");
+    else if(data.level === "MEDIUM")
+        card.classList.add("risk-medium");
+    else
+        card.classList.add("risk-low");
+
+    /* ✅ AI Suggestions rendering */
+    const suggestionList = document.getElementById("aiSuggestions");
+    suggestionList.innerHTML = "";
+
+    if (data.suggestions && data.suggestions.length > 0) {
+        data.suggestions.forEach(s => {
+            const li = document.createElement("li");
+            li.textContent = s;
+            suggestionList.appendChild(li);
+        });
+    } else {
+        const li = document.createElement("li");
+        li.textContent = "No recommendations at the moment";
+        suggestionList.appendChild(li);
+    }
+}
+async function fetchRealPrediction() {
+
+    const talukName = localStorage.getItem("loggedInTaluk");
+    if (!talukName) return;
+
+    try {
+
+        const response = await fetch("/api/predict_flood", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                taluk: talukName
+            })
+        });
+
+        if (!response.ok) {
+            console.error("API request failed");
+            return;
+        }
+
+        const data = await response.json();
+
+        let riskLevel = data.risk_level || "LOW";
+
+        let warning = "Safe conditions";
+        if (riskLevel === "HIGH")
+            warning = "Immediate flood preparedness required";
+        else if (riskLevel === "MEDIUM")
+            warning = "Monitor rainfall and resources";
+        
+        const riskData = {
+        level: riskLevel,
+        weather: `Rain Today: ${data.rain_today} mm`,
+        alert: "AI monitoring active",
+        warning: warning,
+        suggestions: data.ai_suggestions || []
+        };
+
+        localStorage.setItem("talukRisk", JSON.stringify(riskData));
+
+        applyRisk(riskData);
+
+    } catch (err) {
+        console.error("Prediction fetch failed:", err);
+    }
+}
+</script>
+
+</body>
+</html>

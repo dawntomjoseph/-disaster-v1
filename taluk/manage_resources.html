@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Taluk Resource Inventory</title>
+<link rel="stylesheet" href="manage_resources.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Taluk Resource Inventory</h1>
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Resource</th>
+                    <th>Count</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                <tr>
+                    <td>🚤 Rescue Boats</td>
+                    <td id="boats">0</td>
+                    <td>
+                        <button class="edit-btn"
+                        onclick="editValue('boats')">Edit</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>🚑 Rescue Vehicles</td>
+                    <td id="vehicles">0</td>
+                    <td>
+                        <button class="edit-btn"
+                        onclick="editValue('vehicles')">Edit</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>🏕 Relief Camps</td>
+                    <td id="camps">0</td>
+                    <td>
+                        <button class="edit-btn"
+                        onclick="editValue('camps')">Edit</button>
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+function editValue(id){
+
+    let value = prompt("Enter new value:");
+
+    if(value !== null){
+
+        document.getElementById(id).innerText = value;
+        saveResources();
+
+    }
+
+}
+
+function getLoggedTaluk(){
+    return localStorage.getItem('loggedInTaluk');
+}
+
+function loadResources(){
+    const talukName = getLoggedTaluk();
+    if (!talukName){
+        alert('Not logged in');
+        window.location.href = 'taluk_login.html';
+        return;
+    }
+
+    fetch('/api/resources?talukName=' + encodeURIComponent(talukName))
+    .then(r => r.json())
+    .then(data => {
+        if (!data.resources) return;
+        document.getElementById('boats').innerText = data.resources.boats ?? 0;
+        document.getElementById('vehicles').innerText = data.resources.rescue_vehicles ?? 0;
+        document.getElementById('camps').innerText = data.resources.relief_camps ?? 0;
+    })
+    .catch(err => console.error(err));
+}
+
+function saveResources(){
+    const talukName = getLoggedTaluk();
+    if (!talukName) return;
+
+    fetch('/api/resources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            talukName: talukName,
+            boats: parseInt(document.getElementById('boats').innerText, 10) || 0,
+            rescueVehicles: parseInt(document.getElementById('vehicles').innerText, 10) || 0,
+            reliefCamps: parseInt(document.getElementById('camps').innerText, 10) || 0
+        })
+    }).catch(err => console.error(err));
+}
+
+document.addEventListener('DOMContentLoaded', loadResources);
+
+</script>
+
+</body>
+</html>

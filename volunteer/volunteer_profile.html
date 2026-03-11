@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<title>Volunteer Profile</title>
+
+<link rel="stylesheet" href="volunteer_profile.css">
+
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+
+<div class="logo">
+Volunteer Profile
+</div>
+
+<button class="back-btn" onclick="goBack()">
+← Back to Dashboard
+</button>
+
+</header>
+
+
+<!-- PROFILE CONTAINER -->
+<div class="profile-container">
+
+<div class="profile-card">
+
+<h2 class="section-title">
+Volunteer Information
+</h2>
+
+
+<!-- NAME -->
+<div class="field">
+<label>Full Name</label>
+<input id="volName" readonly>
+</div>
+
+
+<!-- USERNAME -->
+<div class="field">
+<label>Username</label>
+<input id="volEmail" readonly>
+</div>
+
+
+<!-- TALUK -->
+<div class="field">
+<label>Belonging Taluk</label>
+
+<select id="volTaluk" disabled>
+
+<option value="">Will be assigned by Taluk Office</option>
+
+</select>
+
+</div>
+
+
+
+<h2 class="section-title">
+Contact Information
+</h2>
+
+
+<!-- PHONE -->
+<div class="field">
+<label>Phone Number</label>
+<input id="volPhone">
+</div>
+
+
+<!-- AVAILABILITY -->
+<div class="field">
+<label>Availability</label>
+
+<select id="volDays">
+
+<option value="">Select availability</option>
+
+<option>All Days</option>
+<option>Weekdays Only</option>
+<option>Weekends Only</option>
+<option>Emergency Only</option>
+
+</select>
+
+</div>
+
+
+
+<button class="save-btn" onclick="updateProfile()">
+Update Profile
+</button>
+
+
+</div>
+</div>
+
+
+
+<script>
+
+let currentVolunteerId = null;
+
+
+/* LOAD PROFILE FROM DATABASE */
+async function loadProfile(){
+
+    const volunteerId =
+        localStorage.getItem("volunteerId");
+
+    if(!volunteerId){
+
+        alert("Please login first");
+
+        window.location.href =
+            "volunteer.html";
+
+        return;
+
+    }
+
+    currentVolunteerId =
+        volunteerId;
+
+    try{
+
+        const response =
+            await fetch(
+                "/api/volunteer/" + volunteerId
+            );
+
+        const data =
+            await response.json();
+
+        if(!response.ok){
+
+            alert(data.error);
+            return;
+
+        }
+
+        const volunteer =
+            data.volunteer;
+
+
+        /* DISPLAY DATA */
+
+        document.getElementById("volName").value =
+            volunteer.name || "";
+
+        document.getElementById("volEmail").value =
+            volunteer.username || "";
+
+        document.getElementById("volPhone").value =
+            volunteer.phone || "";
+
+        document.getElementById("volDays").value =
+            volunteer.availability || "";
+
+
+        /* TALUK DISPLAY */
+
+        if(volunteer.taluk_id){
+
+            document.getElementById("volTaluk").innerHTML =
+                "<option>Assigned by Taluk Office</option>";
+
+        }
+        else{
+
+            document.getElementById("volTaluk").innerHTML =
+                "<option>Not assigned yet</option>";
+
+        }
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        alert("Failed to load profile");
+
+    }
+
+}
+
+
+
+/* UPDATE PROFILE (LOCAL + OPTIONAL BACKEND) */
+function updateProfile(){
+
+    const phone =
+        document.getElementById("volPhone").value;
+
+    const availability =
+        document.getElementById("volDays").value;
+
+
+    /* Update localStorage copy */
+
+    const volunteer =
+        JSON.parse(
+            localStorage.getItem("volunteer") || "{}"
+        );
+
+    volunteer.phone =
+        phone;
+
+    volunteer.availability =
+        availability;
+
+    localStorage.setItem(
+        "volunteer",
+        JSON.stringify(volunteer)
+    );
+
+
+    alert(
+        "Profile updated successfully"
+    );
+
+}
+
+
+
+/* BACK BUTTON */
+function goBack(){
+
+window.location.href =
+"volunteer_dashboard.html";
+
+}
+
+
+/* LOAD ON PAGE START */
+loadProfile();
+
+</script>
+
+
+</body>
+</html>

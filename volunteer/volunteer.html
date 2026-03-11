@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Registration</title>
+    <link rel="stylesheet" href="volunteer.css">
+</head>
+
+<body class="volunteer-page">
+
+<!-- Success Alert -->
+<div id="successAlert" class="success-alert">
+    <div class="success-alert-content">
+        <svg class="success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <h3>Successful Registration!</h3>
+        <p>Your volunteer application has been submitted successfully.</p>
+    </div>
+</div>
+
+
+<!-- Registration Modal -->
+<div id="registrationModal" class="modal">
+
+<div class="modal-content">
+
+<button class="close-btn" onclick="closeRegistrationModal()">
+&times;
+</button>
+
+<div class="registration-section modal-registration">
+
+<div class="badge">NEW USER</div>
+
+<h1>Volunteer Registration</h1>
+
+<p class="subtitle">
+Join our team and make a difference in the community
+</p>
+
+
+<form id="registrationForm">
+
+<div class="form-row">
+
+<div class="form-group">
+<label>First Name</label>
+<input type="text" id="fname" required>
+</div>
+
+<div class="form-group">
+<label>Last Name</label>
+<input type="text" id="lname" required>
+</div>
+
+</div>
+
+
+<div class="form-group">
+<label>Email Address</label>
+<input type="email" id="email" required>
+</div>
+
+
+<div class="form-group">
+<label>Phone Number</label>
+<input type="tel" id="phone" required>
+</div>
+
+
+<div class="form-row">
+
+<div class="form-group">
+<label>Username</label>
+<input type="text" id="vusername" required>
+</div>
+
+<div class="form-group">
+<label>Password</label>
+<input type="password" id="vpassword" required>
+</div>
+
+</div>
+
+
+<div class="form-row">
+
+<div class="form-group">
+<label>Skills</label>
+<input type="text" id="skills">
+</div>
+
+<div class="form-group">
+<label>Availability</label>
+<input type="text" id="availability">
+</div>
+
+</div>
+
+
+<div class="form-group">
+<label>Why do you want to volunteer?</label>
+<textarea id="bio" required></textarea>
+</div>
+
+
+<button type="submit" class="submit-btn">
+Register Now
+</button>
+
+</form>
+
+</div>
+</div>
+</div>
+
+
+
+<!-- LOGIN SECTION -->
+<div class="container">
+
+<div class="login-section">
+
+<div class="badge">EXISTING USER</div>
+
+<h1>Login</h1>
+
+<p class="subtitle">
+Welcome back
+</p>
+
+
+<form id="loginForm">
+
+<div class="form-group">
+
+<label>Username</label>
+
+<input type="text" id="username" required>
+
+</div>
+
+
+<div class="form-group password-group">
+
+<label>Password</label>
+
+<div class="password-wrapper">
+
+<input type="password" id="password" required>
+
+<button type="button" class="password-toggle" onclick="togglePassword()">
+
+<svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+
+<circle cx="12" cy="12" r="3"></circle>
+
+</svg>
+
+</button>
+
+</div>
+
+</div>
+
+
+<button type="submit" class="submit-btn login-btn">
+✓ Login
+</button>
+
+</form>
+
+
+<div class="new-registration-link">
+
+<p>
+New to volunteering?
+
+<a href="#" onclick="openRegistrationModal(event)">
+Register here
+</a>
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<script>
+
+function showSuccessAlert(){
+
+const alert =
+document.getElementById("successAlert");
+
+alert.classList.add("show");
+
+setTimeout(()=>{
+alert.classList.remove("show");
+},3000);
+
+}
+
+
+document.getElementById("loginForm")
+.addEventListener("submit", async function(event){
+
+event.preventDefault();
+
+const username =
+document.getElementById("username").value.trim();
+
+const password =
+document.getElementById("password").value;
+
+
+try{
+
+const response =
+await fetch(
+"/api/volunteer/login",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+username,
+password
+})
+}
+);
+
+const data =
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(data.error || "Login failed");
+
+}
+
+
+const volunteer =
+data.volunteer;
+
+
+/* SAVE ID */
+localStorage.setItem(
+"volunteerId",
+volunteer.id
+);
+
+
+/* SAVE FULL OBJECT */
+localStorage.setItem(
+"volunteer",
+JSON.stringify(volunteer)
+);
+
+
+/* SAVE NAME */
+localStorage.setItem(
+"volunteerName",
+volunteer.name
+);
+
+
+/* SAVE USERNAME */
+localStorage.setItem(
+"loggedInVolunteer",
+volunteer.username
+);
+
+
+window.location.href =
+"volunteer_dashboard.html";
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+});
+
+/* ================= REGISTER ================= */
+
+document.getElementById("registrationForm")
+.addEventListener("submit", async function(event){
+
+event.preventDefault();
+
+const firstName =
+document.getElementById("fname").value.trim();
+
+const lastName =
+document.getElementById("lname").value.trim();
+
+const phone =
+document.getElementById("phone").value.trim();
+
+const availability =
+document.getElementById("availability").value.trim();
+
+const username =
+document.getElementById("vusername").value.trim();
+
+const password =
+document.getElementById("vpassword").value;
+
+
+try{
+
+const response =
+await fetch(
+"/api/volunteer/register",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+firstName,
+lastName,
+phone,
+availability,
+username,
+password
+})
+}
+);
+
+const data =
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(data.error);
+
+}
+
+
+showSuccessAlert();
+
+closeRegistrationModal();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+});
+
+
+
+function togglePassword(){
+
+const passwordInput =
+document.getElementById("password");
+
+passwordInput.type =
+passwordInput.type === "password"
+? "text"
+: "password";
+
+}
+
+
+
+function openRegistrationModal(event){
+
+event.preventDefault();
+
+document.getElementById("registrationModal")
+.style.display="flex";
+
+}
+
+
+
+function closeRegistrationModal(){
+
+document.getElementById("registrationModal")
+.style.display="none";
+
+}
+
+
+
+window.onclick = function(event){
+
+const modal =
+document.getElementById("registrationModal");
+
+if(event.target === modal){
+
+modal.style.display="none";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

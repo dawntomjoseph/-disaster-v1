@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Request Resources</title>
+<link rel="stylesheet" href="manage_resources.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Request Emergency Resources</h1>
+
+<div class="table-card">
+
+<table>
+
+<tr>
+<th>Resource Type</th>
+<th>Quantity</th>
+<th>Action</th>
+</tr>
+
+<tr>
+
+<td>
+
+<select id="resourceType">
+
+<option value="boats">🚤 Rescue Boats</option>
+<option value="rescue_vehicles">🚑 Rescue Vehicles</option>
+<option value="relief_camps">🏕 Relief Camps</option>
+
+</select>
+
+</td>
+
+<td>
+<input type="number" id="quantity" min="1" value="1" style="padding:6px;border-radius:8px;border:none;">
+</td>
+
+<td>
+
+<button class="edit-btn" onclick="submitRequest()">
+Request
+</button>
+
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<h2>Previous Requests</h2>
+
+<div class="table-card">
+
+<table id="previousRequestsTable">
+
+<tr>
+<th>Resource Type</th>
+<th>Quantity</th>
+<th>Status</th>
+<th>Reason</th>
+</tr>
+
+<!-- Previous requests will be loaded here -->
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+function submitRequest(){
+
+const taluk = localStorage.getItem("loggedInTaluk");
+
+if(!taluk){
+alert("Login required");
+return;
+}
+
+const resource = document.getElementById("resourceType").value;
+const qty = parseInt(document.getElementById("quantity").value);
+
+fetch("/api/request_resource",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+taluk:taluk,
+resource_type:resource,
+quantity:qty
+
+})
+
+})
+.then(res=>res.json())
+.then(data=>{
+
+alert("Request submitted successfully");
+loadPreviousRequests(); // Reload the table after submitting
+
+});
+
+}
+
+function loadPreviousRequests() {
+const taluk = localStorage.getItem("loggedInTaluk");
+if (!taluk) {
+alert("Login required");
+return;
+}
+
+fetch(`/api/get_taluk_requests/${taluk}`)
+.then(res => res.json())
+.then(data => {
+const table = document.getElementById("previousRequestsTable");
+const rows = table.querySelectorAll("tr:not(:first-child)");
+rows.forEach(row => row.remove()); // Clear existing rows
+
+data.requests.forEach(req => {
+const resourceDisplay = {
+"boats": "🚤 Rescue Boats",
+"rescue_vehicles": "🚑 Rescue Vehicles",
+"relief_camps": "🏕 Relief Camps"
+}[req.resource_type] || req.resource_type;
+
+const row = table.insertRow();
+row.insertCell(0).textContent = resourceDisplay;
+row.insertCell(1).textContent = req.quantity;
+row.insertCell(2).textContent = req.status;
+row.insertCell(3).textContent = req.reason || "-";
+});
+})
+.catch(err => console.error("Error loading requests:", err));
+}
+
+// Load previous requests on page load
+window.onload = loadPreviousRequests;
+
+</script>
+
+</body>
+</html>

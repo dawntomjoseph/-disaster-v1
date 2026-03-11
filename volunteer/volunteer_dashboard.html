@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Volunteer Dashboard</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="volunteer_dashboard.css">
+
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+
+<div class="logo">
+Volunteer Disaster Response Portal
+</div>
+
+<div class="top-actions">
+
+<button class="profile-btn"
+onclick="go('volunteer_profile.html')">
+Profile
+</button>
+
+<button class="logout-btn"
+onclick="logout()">
+Logout
+</button>
+
+</div>
+
+</header>
+
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+<!-- Welcome -->
+<div class="welcome-card">
+
+<h1>
+Welcome,
+<span id="volName">Volunteer</span>
+</h1>
+
+<p class="welcome-sub">
+Assigned Taluk Disaster Management System
+</p>
+
+</div>
+
+
+<!-- TALUK WARNING CARD -->
+<div class="warning-card">
+
+<div class="warning-header">
+
+<h2>Taluk Warning Status</h2>
+
+<div id="warningBadge"
+class="warning-badge safe">
+SAFE
+</div>
+
+</div>
+
+<p id="warningMessage">
+No active warnings from Taluk Office
+</p>
+
+</div>
+
+
+<!-- ACTIVITY LOG -->
+<div class="activity-card">
+
+<div class="activity-header">
+
+<h2>Assigned Duties</h2>
+
+<div class="gov-badge">
+Official Record
+</div>
+
+</div>
+
+
+<table class="activity-table">
+
+<thead>
+
+<tr>
+
+<th>Taluk Name</th>
+<th>Assigned Date</th>
+<th>Location</th>
+<th>Status</th>
+<th>Assigned By</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="activityTableBody">
+
+<!-- Assigned duties will be loaded here -->
+
+</tbody>
+
+</table>
+
+</div>
+
+
+</main>
+
+
+<script>
+
+const volunteer =
+JSON.parse(localStorage.getItem("volunteer"));
+
+document.getElementById("volName").innerText =
+volunteer?.name || "Volunteer";
+
+loadAssignedDuties();
+
+/* Load assigned duties */
+async function loadAssignedDuties(){
+    const volunteerId = localStorage.getItem("volunteerId");
+    if(!volunteerId) return;
+
+    try {
+        const response = await fetch(`/api/volunteer/${volunteerId}`);
+        const data = await response.json();
+        const duties = data.volunteer.assigned_duties || [];
+
+        const tbody = document.getElementById("activityTableBody");
+        tbody.innerHTML = "";
+
+        // Update warning status badge based on assigned duties
+        const warningBadge = document.getElementById("warningBadge");
+        const warningMessage = document.getElementById("warningMessage");
+
+        // Check if there are any active (non-completed) duties
+        const hasActiveDuties = duties.some(duty => duty.status === 'Active');
+
+        if(hasActiveDuties){
+            // There are active assigned duties
+            warningBadge.textContent = "ACTIVE";
+            warningBadge.className = "warning-badge active";
+            warningMessage.textContent = "You have active assigned duties from Taluk Office";
+        } else {
+            // No active duties (all completed or none assigned)
+            warningBadge.textContent = "SAFE";
+            warningBadge.className = "warning-badge safe";
+            warningMessage.textContent = "No active assignments at this moment";
+        }
+
+        duties.forEach((duty, index) => {
+            const tr = document.createElement("tr");
+            const isCompleted = duty.status === 'Completed';
+            tr.innerHTML = `
+                <td>${duty.taluk}</td>
+                <td>${duty.assigned_date}</td>
+                <td>${duty.location || 'Not specified'}</td>
+                <td class="${isCompleted ? 'status-completed' : 'status-active'}">${duty.status}</td>
+                <td>${duty.assigned_by}</td>
+                <td><button class="completed-btn" onclick="markDutyCompleted('${duty.taluk}', this)" ${isCompleted ? 'disabled' : ''}>✓ Completed</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        if(duties.length === 0){
+            tbody.innerHTML = "<tr><td colspan='6'>No assigned duties</td></tr>";
+        }
+    } catch (err) {
+        console.error("Failed to load assigned duties:", err);
+    }
+}
+
+/* Navigation */
+function go(page){
+
+window.location.href = page;
+
+}
+
+
+/* Mark duty as completed */
+async function markDutyCompleted(talukName, buttonElement){
+    const volunteerId = localStorage.getItem("volunteerId");
+    const volunteerName = localStorage.getItem("volunteerName");
+    
+    if(!volunteerId || !volunteerName) return;
+
+    try {
+        const response = await fetch('/api/duty/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                taluk_name: talukName,
+                volunteer_name: volunteerName
+            })
+        });
+        
+        if(response.ok){
+            // Disable button and change row status
+            buttonElement.disabled = true;
+            const row = buttonElement.parentElement.parentElement;
+            row.cells[3].className = 'status-completed';
+            row.cells[3].textContent = 'Completed';
+            
+            // Check if all duties are now completed
+            const tbody = document.getElementById("activityTableBody");
+            const rows = tbody.querySelectorAll("tr");
+            let hasActiveDuties = false;
+            
+            for(let row of rows){
+                if(row.cells && row.cells[3] && row.cells[3].textContent === 'Active'){
+                    hasActiveDuties = true;
+                    break;
+                }
+            }
+            
+            // Update warning badge
+            const warningBadge = document.getElementById("warningBadge");
+            const warningMessage = document.getElementById("warningMessage");
+            
+            if(hasActiveDuties){
+                warningBadge.textContent = "ACTIVE";
+                warningBadge.className = "warning-badge active";
+                warningMessage.textContent = "You have active assigned duties from Taluk Office";
+            } else {
+                warningBadge.textContent = "SAFE";
+                warningBadge.className = "warning-badge safe";
+                warningMessage.textContent = "No active assignments at this moment";
+            }
+            
+            console.log('Duty marked as completed');
+        }
+    } catch (err) {
+        console.error("Failed to mark duty as completed:", err);
+    }
+}
+
+/* Logout */
+function logout(){
+
+localStorage.clear();
+
+window.location.href = "../homepage/index.html";
+
+}
+
+</script>
+
+</body>
+</html>
