@@ -101,6 +101,14 @@ Join our team and make a difference in the community
 
 
 <div class="form-group">
+<label>Belonging Taluk</label>
+<select id="taluk" required>
+<option value="">Select a Taluk</option>
+</select>
+</div>
+
+
+<div class="form-group">
 <label>Why do you want to volunteer?</label>
 <textarea id="bio" required></textarea>
 </div>
@@ -195,6 +203,30 @@ Register here
 
 
 <script>
+
+/* LOAD TALUKS ON PAGE START */
+async function loadTalukDropdown() {
+    try {
+        const response = await fetch("/api/taluk");
+        const data = await response.json();
+        const talukSelect = document.getElementById("taluk");
+        talukSelect.innerHTML = '<option value="">Select a Taluk</option>';
+        
+        data.taluks.forEach(taluk => {
+            const option = document.createElement("option");
+            option.value = taluk.id;
+            option.textContent = taluk.name;
+            talukSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Failed to load taluks:", error);
+    }
+}
+
+window.addEventListener("DOMContentLoaded", function() {
+    loadTalukDropdown();
+});
+
 
 function showSuccessAlert(){
 
@@ -319,6 +351,9 @@ document.getElementById("vusername").value.trim();
 const password =
 document.getElementById("vpassword").value;
 
+const talukId =
+document.getElementById("taluk").value;
+
 
 try{
 
@@ -336,7 +371,8 @@ lastName,
 phone,
 availability,
 username,
-password
+password,
+taluk_id: talukId ? parseInt(talukId) : null
 })
 }
 );

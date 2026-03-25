@@ -184,16 +184,18 @@ function showRequests(){
                 "relief_camps": "🏕 Relief Camps"
             }[r.resource_type] || r.resource_type;
 
+            const isPending = !r.status || r.status.toUpperCase() === 'PENDING';
+
             body.innerHTML+=`
             <tr>
                 <td>${r.taluk}</td>
                 <td>${resourceDisplay}</td>
                 <td>${r.quantity}</td>
-                <td>${r.status}</td>
+                <td>${r.status || 'PENDING'}</td>
                 <td>${r.reason || "-"}</td>
                 <td>
-                    <button onclick="approveRequest(${r.id})">✔</button>
-                    <button onclick="rejectRequest(${r.id})">✖</button>
+                    <button onclick="approveRequest(${r.id})" ${isPending ? '' : 'disabled'}>✔</button>
+                    <button onclick="rejectRequest(${r.id})" ${isPending ? '' : 'disabled'}>✖</button>
                 </td>
             </tr>
             `;
@@ -278,6 +280,112 @@ function predictFlood() {
 
 /* ---------- AUTO LOAD ---------- */
 loadTalukDropdown();
+
+/* ---------- LEGACY INLINED FROM admin_dashboard.js ---------- */
+const content = document.getElementById("content");
+
+/* LOGOUT (legacy helper, not used by current page, but kept as inline JS) */
+function legacyLogout() {
+    window.location.href = "../homepage/index.html";
+}
+
+/* VOLUNTEERS (legacy helper) */
+function legacyLoadVolunteers() {
+    fetch("/api/db")
+        .then(res => res.json())
+        .then(data => {
+            const volunteers = data.volunteers || [];
+
+            let html = `
+                <h2>Volunteer List</h2>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                    </tr>
+            `;
+
+            volunteers.forEach(v => {
+                html += `
+                    <tr>
+                        <td>${v.name}</td>
+                        <td>${v.phone || "-"}</td>
+                    </tr>
+                `;
+            });
+
+            html += "</table>";
+            if (content) {
+                content.innerHTML = html;
+                content.style.display = "block";
+            }
+        });
+}
+
+/* TALUKS (legacy helper) */
+function legacyLoadTaluks() {
+    fetch("/api/taluk")
+        .then(res => res.json())
+        .then(data => {
+            const taluks = data.taluks || [];
+
+            let html = `
+                <h2>Taluk List</h2>
+                <table>
+                    <tr>
+                        <th>Taluk Name</th>
+                        <th>Resources</th>
+                    </tr>
+            `;
+
+            taluks.forEach(t => {
+                html += `
+                    <tr>
+                        <td>${t.name}</td>
+                        <td>
+                            <span class="eye" onclick="viewResources('${t.name}')">👁</span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += "</table>";
+            if (content) {
+                content.innerHTML = html;
+                content.style.display = "block";
+            }
+        });
+}
+
+/* RESOURCES (legacy helper) */
+function legacyViewResources(talukName) {
+    fetch(`/api/resources?talukName=${talukName}`)
+        .then(res => res.json())
+        .then(data => {
+            const r = data.resources || {};
+
+            const resourceBody = document.getElementById("resourceBody");
+            if (resourceBody) {
+                resourceBody.innerHTML = `
+                    <p><b>Boats:</b> ${r.boats || 0}</p>
+                    <p><b>Rescue Vehicles:</b> ${r.rescue_vehicles || 0}</p>
+                    <p><b>Relief Camps:</b> ${r.relief_camps || 0}</p>
+                `;
+            }
+
+            const resourceModal = document.getElementById("resourceModal");
+            if (resourceModal) {
+                resourceModal.style.display = "flex";
+            }
+        });
+}
+
+function legacyCloseModal() {
+    const resourceModal = document.getElementById("resourceModal");
+    if (resourceModal) {
+        resourceModal.style.display = "none";
+    }
+}
 
 </script>
 </body>

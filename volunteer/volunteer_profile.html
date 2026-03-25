@@ -53,11 +53,7 @@ Volunteer Information
 <div class="field">
 <label>Belonging Taluk</label>
 
-<select id="volTaluk" disabled>
-
-<option value="">Will be assigned by Taluk Office</option>
-
-</select>
+<input id="volTaluk" readonly>
 
 </div>
 
@@ -165,18 +161,18 @@ async function loadProfile(){
             volunteer.availability || "";
 
 
-        /* TALUK DISPLAY */
+        /* TALUK DISPLAY (READ-ONLY) */
 
-        if(volunteer.taluk_id){
+        if(volunteer.taluk_name){
 
-            document.getElementById("volTaluk").innerHTML =
-                "<option>Assigned by Taluk Office</option>";
+            document.getElementById("volTaluk").value =
+                volunteer.taluk_name;
 
         }
         else{
 
-            document.getElementById("volTaluk").innerHTML =
-                "<option>Not assigned yet</option>";
+            document.getElementById("volTaluk").value =
+                "Not assigned yet";
 
         }
 
@@ -193,8 +189,8 @@ async function loadProfile(){
 
 
 
-/* UPDATE PROFILE (LOCAL + OPTIONAL BACKEND) */
-function updateProfile(){
+/* UPDATE PROFILE (BACKEND + LOCALSTORAGE) */
+async function updateProfile(){
 
     const phone =
         document.getElementById("volPhone").value;
@@ -203,28 +199,45 @@ function updateProfile(){
         document.getElementById("volDays").value;
 
 
-    /* Update localStorage copy */
-
-    const volunteer =
-        JSON.parse(
-            localStorage.getItem("volunteer") || "{}"
+    try {
+        const response = await fetch(
+            "/api/volunteer/" + currentVolunteerId,
+            {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    phone: phone,
+                    availability: availability
+                })
+            }
         );
 
-    volunteer.phone =
-        phone;
+        const data = await response.json();
 
-    volunteer.availability =
-        availability;
+        if (!response.ok) {
+            alert("Error: " + (data.error || "Unknown error"));
+            return;
+        }
 
-    localStorage.setItem(
-        "volunteer",
-        JSON.stringify(volunteer)
-    );
+        /* Update localStorage copy */
+        const volunteer =
+            JSON.parse(
+                localStorage.getItem("volunteer") || "{}"
+            );
 
+        volunteer.phone = phone;
+        volunteer.availability = availability;
 
-    alert(
-        "Profile updated successfully"
-    );
+        localStorage.setItem(
+            "volunteer",
+            JSON.stringify(volunteer)
+        );
+
+        alert("Profile updated successfully");
+    } catch (error) {
+        console.error(error);
+        alert("Failed to update profile: " + error.message);
+    }
 
 }
 

@@ -81,6 +81,23 @@
             ✓ Save Contact Information
         </button>
 
+        <!-- Volunteers Section -->
+        <h2 class="section-title">Registered Volunteers</h2>
+        
+        <table id="volunteersTable" style="width:100%; border-collapse: collapse; margin-top:15px;">
+            <thead>
+                <tr style="border-bottom: 2px solid #ccc;">
+                    <th style="padding:10px; text-align:left;">Volunteer Name</th>
+                    <th style="padding:10px; text-align:left;">Phone</th>
+                    <th style="padding:10px; text-align:left;">Availability</th>
+                    <th style="padding:10px; text-align:left;">Username</th>
+                </tr>
+            </thead>
+            <tbody id="volunteersTableBody">
+                <tr><td colspan="4" style="padding:20px; text-align:center; color:#999;">Loading volunteers...</td></tr>
+            </tbody>
+        </table>
+
     </div>
 
 </div>
@@ -125,6 +142,8 @@ function loadProfile(){
         }
 
         const profile = obj.taluk;
+        const talukId = profile.id;
+        
         talukName.value = profile.name || '';
         district.value = profile.district || '';
         population.value = profile.population || '';
@@ -139,8 +158,42 @@ function loadProfile(){
             officerPhone.value = profile.contact.phone || '';
             officerEmail.value = profile.contact.email || '';
         }
+        
+        // Load volunteers for this taluk
+        loadVolunteers(talukId);
     })
     .catch(err => console.error(err));
+}
+
+
+function loadVolunteers(talukId) {
+    fetch('/api/volunteers/by-taluk/' + talukId)
+    .then(r => r.json())
+    .then(obj => {
+        const tbody = document.getElementById("volunteersTableBody");
+        
+        if (!obj.volunteers || obj.volunteers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#999;">No volunteers assigned to this taluk yet</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = '';
+        obj.volunteers.forEach(vol => {
+            const row = document.createElement("tr");
+            row.style.borderBottom = "1px solid #eee";
+            row.innerHTML = `
+                <td style="padding:10px;">${vol.name || '-'}</td>
+                <td style="padding:10px;">${vol.phone || '-'}</td>
+                <td style="padding:10px;">${vol.availability || '-'}</td>
+                <td style="padding:10px;">${vol.username || '-'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    })
+    .catch(err => {
+        console.error(err);
+        document.getElementById("volunteersTableBody").innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:red;">Failed to load volunteers</td></tr>';
+    });
 }
 
 

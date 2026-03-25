@@ -726,11 +726,13 @@ def register_volunteer():
     if cur.fetchone():
         return jsonify({'error': 'Username already exists'}), 409
 
+    taluk_id = data.get('taluk_id')
+    
     cur.execute(
         'INSERT INTO volunteers(name, phone, username, password, taluk_id, availability) VALUES(?,?,?,?,?,?)',
         (f"{data['firstName']} {data['lastName']}",
          data.get('phone'), data['username'], data['password'],
-         None, data.get('availability'))
+         taluk_id, data.get('availability'))
     )
     conn.commit()
 
@@ -756,7 +758,7 @@ def login_volunteer():
     return jsonify({'volunteer': sanitize_account(dict(vol))})
 
 
-@app.route('/api/volunteer/<int:volunteer_id>')
+@app.route('/api/volunteer/<int:volunteer_id>', methods=['GET'])
 def get_volunteer_profile(volunteer_id):
     conn = get_db()
     cur = conn.cursor()
@@ -767,6 +769,12 @@ def get_volunteer_profile(volunteer_id):
         return jsonify({'error': 'Volunteer not found'}), 404
 
     volunteer = sanitize_account(dict(vol))
+
+    # Get taluk name if assigned
+    if volunteer.get('taluk_id'):
+        cur.execute('SELECT name FROM taluk WHERE id = ?', (volunteer['taluk_id'],))
+        taluk_row = cur.fetchone()
+        volunteer['taluk_name'] = taluk_row['name'] if taluk_row else None
 
     # Assigned duties from monitoring
     cur.execute('SELECT taluk_name, assigned_date, completion_status, assignment_location FROM monitoring WHERE volunteer_name = ?', (vol['name'],))
@@ -785,12 +793,59 @@ def get_volunteer_profile(volunteer_id):
     return jsonify({'volunteer': volunteer})
 
 
+@app.route('/api/volunteer/<int:volunteer_id>', methods=['PUT', 'POST'])
+def update_volunteer_profile(volunteer_id):
+    data = request.get_json() or {}
+    
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute('SELECT id FROM volunteers WHERE id = ?', (volunteer_id,))
+    if not cur.fetchone():
+        return jsonify({'error': 'Volunteer not found'}), 404
+
+    phone = data.get('phone')
+    availability = data.get('availability')
+
+    if phone is not None:
+        cur.execute('UPDATE volunteers SET phone = ? WHERE id = ?', (phone, volunteer_id))
+    
+    if availability is not None:
+        cur.execute('UPDATE volunteers SET availability = ? WHERE id = ?', (availability, volunteer_id))
+
+    conn.commit()
+
+    cur.execute('SELECT * FROM volunteers WHERE id = ?', (volunteer_id,))
+    updated_vol = dict(cur.fetchone())
+    
+    # Get taluk name if assigned
+    if updated_vol.get('taluk_id'):
+        cur.execute('SELECT name FROM taluk WHERE id = ?', (updated_vol['taluk_id'],))
+        taluk_row = cur.fetchone()
+        updated_vol['taluk_name'] = taluk_row['name'] if taluk_row else None
+    
+    updated_vol = sanitize_account(updated_vol)
+
+    return jsonify({'status': 'updated', 'volunteer': updated_vol})
+
+
 @app.route('/api/volunteers')
 def get_volunteers():
     conn = get_db()
     cur = conn.cursor()
     cur.execute('SELECT name FROM volunteers')
     volunteers = [r['name'] for r in cur.fetchall()]
+    return jsonify({'volunteers': volunteers})
+
+
+@app.route('/api/volunteers/by-taluk/<int:taluk_id>')
+def get_volunteers_by_taluk(taluk_id):
+    conn = get_db()
+    cur = conn.cursor()
+    
+    cur.execute('SELECT id, name, phone, username, availability FROM volunteers WHERE taluk_id = ?', (taluk_id,))
+    volunteers = [dict(r) for r in cur.fetchall()]
+    
     return jsonify({'volunteers': volunteers})
 
 
