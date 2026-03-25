@@ -20,6 +20,8 @@ def init_db():
         population INTEGER,
         username TEXT,
         password TEXT,
+        latitude REAL, 
+        longitude REAL,
         elevation REAL
     )
     """)
@@ -102,6 +104,10 @@ def init_db():
 
     ensure_column('taluk', 'username', 'TEXT')
     ensure_column('taluk', 'password', 'TEXT')
+    # Added later: ensure the taluk table has location columns
+    ensure_column('taluk', 'latitude', 'REAL')
+    ensure_column('taluk', 'longitude', 'REAL')
+    ensure_column('taluk', 'elevation', 'REAL')
     ensure_column('volunteers', 'username', 'TEXT')
     ensure_column('volunteers', 'password', 'TEXT')
     ensure_column('monitoring', 'assigned_date', 'TEXT')
